@@ -1,0 +1,2 @@
+numpy
+confluent_kafka
