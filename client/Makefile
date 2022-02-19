@@ -1,12 +1,17 @@
 build:
-	CGOENABLED=1 go build -o pydc_client.so -buildmode=c-shared .
+	mkdir bin
+	CGOENABLED=1 go build -o bin/pydc_client.so -buildmode=c-shared .
 
 clean:
-	rm ~/percy/pydc/client/*.so
-	rm ~/percy/pydc/client/*.h
+	rm -rf bin/
 
 test:
 	go test ./...
 
 pytest:
 	python3 tester.py
+
+all:
+	make clean
+	make build
+	make pytest
