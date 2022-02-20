@@ -2,6 +2,8 @@ github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dustin/go-humanize v1.0.0/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
+github.com/go-python/cpy3 v0.0.0-20211127141159-9ab339a58efd h1:4t+oQCnTMlDp59rJ1mA82/ybZALkH/ysURRMHCM+t+k=
+github.com/go-python/cpy3 v0.0.0-20211127141159-9ab339a58efd/go.mod h1:RFymvLNwTOImoU1Cw7HruGQ7yb6AdwimJ+YQVRRYp0E=
 github.com/kelindar/async v1.0.0 h1:oJiFAt3fVB/b5zVZKPBU+pP9lR3JVyeox9pYlpdnIK8=
 github.com/kelindar/async v1.0.0/go.mod h1:bJRlwaRiqdHi+4dpVDNHdwgyRyk6TxpA21fByLf7hIY=
 github.com/kelindar/bitmap v1.1.5 h1:cqXplFOOwJX/HRu+GZBcz03wo2LZftVUMsuAjW/3/rQ=

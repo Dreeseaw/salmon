@@ -2,7 +2,10 @@ module github.com/dreeseaw/pydc/client
 
 go 1.17
 
-require github.com/kelindar/column v0.0.0-20220116152415-02b2c664dc26
+require (
+	github.com/go-python/cpy3 v0.0.0-20211127141159-9ab339a58efd
+	github.com/kelindar/column v0.0.0-20220116152415-02b2c664dc26
+)
 
 require (
 	github.com/kelindar/bitmap v1.1.5 // indirect

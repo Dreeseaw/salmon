@@ -1,6 +1,6 @@
 build:
 	mkdir bin
-	CGOENABLED=1 go build -o bin/pydc_client.so -buildmode=c-shared .
+	PKG_CONFIG_PATH="/usr/local/opt/python@3.7/lib/pkgconfig" LIBRARY_PATH="/usr/local/opt/python@3.7/lib" CGOENABLED=1 go build -o bin/pydc_client.so -buildmode=c-shared .
 
 clean:
 	rm -rf bin/

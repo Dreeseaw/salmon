@@ -3,9 +3,16 @@
 */
 package main
 
+// #cgo pkg-config: python3
+// #include <stdlib.h>
+// #include <Python.h>
+import "C"
+
 import (
-    "C"
 //    "fmt"
+    "unsafe"
+    
+//    py3 "github.com/go-python/cpy3" 
 )
 
 var StorePtr *Store = nil
@@ -45,9 +52,14 @@ func AddCol(collection, colname, coltype *C.char) bool {
     return true
 }
 
-//export Set
-func Set(coll string) bool {
-    return false
+//export Insert
+func Insert(coll *C.char, pyobj unsafe.Pointer) bool {
+    cn := C.GoString(coll)
+    obj := (*C.PyObject)(pyobj)
+    if err := StorePtr.AddObject(cn, obj); err != nil {
+        return false
+    }
+    return true
 }
 
 //export Get

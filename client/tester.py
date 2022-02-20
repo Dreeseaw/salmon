@@ -4,6 +4,13 @@ from ctypes import *
 default_path = 'bin/'
 default_fn   = 'pydc_client.so' 
 
+class TestObject(Structure):
+    _fields_ = [
+            ("testcol", c_int64),
+            ("testcolstr", c_char_p),
+            ("testcolflo", c_double),
+            ("testcolbool", c_bool)]
+
 def main(args):
     lib_path = os.path.join(args[1] if len(args) > 1 else default_path, default_fn) 
     pydc = cdll.LoadLibrary(lib_path)
@@ -30,6 +37,13 @@ def main(args):
         "testcolbool".encode('utf-8'), 
         "bool".encode('utf-8'),
     ))
+
+    test_obj = TestObject(69, "stuff".encode('utf-8'), 3.3, True)
+    print(pydc.Insert(
+        "testcoll".encode('utf-8'),
+        pointer(test_obj),
+    ))
+    print(test_obj.testcol)
     
 
     print('done')
