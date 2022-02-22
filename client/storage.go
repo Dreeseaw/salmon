@@ -14,7 +14,6 @@ import (
     "unsafe"
 
     "github.com/kelindar/column"
-//    py3 "github.com/go-python/cpy3"
 )
 
 type ColFunc func() column.Column
@@ -93,7 +92,7 @@ func (s *Store) AddColumn(coll, cn, ct string) error {
     return errors.New("Collection does not exist")
 }
 
-func (s *Store) AddObject(coll string, obj *C.PyObject) error {
+func (s *Store) AddObject(coll string, obj []byte) error {
     if collection, exists := s.CollMap[coll]; exists {
         ctp, _ := s.CollMetadataMap[coll]
         tmpobj := make(map[string]interface{})

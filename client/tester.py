@@ -1,4 +1,5 @@
 import sys, os
+import marshal
 from ctypes import *
 
 default_path = 'bin/'
@@ -17,6 +18,7 @@ def main(args):
 
     print(pydc.Initstore())
     print(pydc.Newcoll("testcoll".encode('utf-8')))
+
     print(pydc.AddCol(
         "testcoll".encode('utf-8'),
         "testcol".encode('utf-8'), 
@@ -27,25 +29,30 @@ def main(args):
         "testcolstr".encode('utf-8'), 
         "string".encode('utf-8'),
     ))
-    print(pydc.AddCol(
+    pydc.AddCol(
         "testcoll".encode('utf-8'),
         "testcolflo".encode('utf-8'), 
         "float".encode('utf-8'),
-    ))
-    print(pydc.AddCol(
+    )
+    pydc.AddCol(
         "testcoll".encode('utf-8'),
         "testcolbool".encode('utf-8'), 
         "bool".encode('utf-8'),
-    ))
+    )
 
-    test_obj = TestObject(69, "stuff".encode('utf-8'), 3.3, True)
+    test_tuple = (69, 'stuff', 3.3, True)
+    ttmd = marshal.dumps(test_tuple)
+    print(ttmd)
+    print(len(ttmd))
+    #for ttm in ttmd:
+    #    print(str(ttm))
+
+    print("entering go")
     print(pydc.Insert(
         "testcoll".encode('utf-8'),
-        pointer(test_obj),
+        marshal.dumps(test_tuple),
+        len(ttmd),
     ))
-    print(test_obj.testcol)
-    
-
     print('done')
 
 
