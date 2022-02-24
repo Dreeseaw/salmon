@@ -14,23 +14,23 @@ import (
 )
 
 type ColFunc func() column.Column
-type CollTypeMap map[string]string
+type CollTypeList []string
 
 var CollectionTypeMap = map[string]ColFunc{
     "string": column.ForString,
     "float": column.ForFloat64,
-    "int": column.ForInt64,
+    "int": column.ForInt32,
     "bool": column.ForBool,
 }
 
 type Store struct {
     CollMap         map[string]*column.Collection
-    CollMetadataMap map[string]CollTypeMap
+    CollMetadataMap map[string]CollTypeList
 }
 
 func NewStore() *Store {
     cm := make(map[string]*column.Collection)
-    mm := make(map[string]CollTypeMap)
+    mm := make(map[string]CollTypeList)
     ret := Store{
         CollMap: cm,
         CollMetadataMap: mm,
@@ -45,7 +45,7 @@ func (s *Store) NewCollection(name string) error {
     newColl := column.NewCollection()
     // newColl.CreateColumn("serial", column.ForKey())
     s.CollMap[name] = newColl
-    ctp := make(CollTypeMap)
+    ctp := make(CollTypeList, 0)
     s.CollMetadataMap[name] = ctp
     return nil
 }
@@ -55,7 +55,7 @@ func (s *Store) AddColumn(coll, cn, ct string) error {
         if colfunc, exists := CollectionTypeMap[ct]; exists {
             collection.CreateColumn(cn, colfunc())
             ctp, _ := s.CollMetadataMap[coll]
-            ctp[cn] = ct
+            s.CollMetadataMap[coll] = append(ctp, ct)
             return nil
         }
         fmt.Printf("Column type does not exist")
@@ -70,11 +70,12 @@ func (s *Store) AddObject(coll string, obj []interface{}) error {
     if collection, exists := s.CollMap[coll]; exists {
         ctp, _ := s.CollMetadataMap[coll]
         obj_map := make(map[string]interface{})
-        obj_map_index := 0
+        // obj_map_index := 0
 
-        for colname, _ := range ctp {
-            obj_map[colname] = obj[obj_map_index]
-            obj_map_index += 1
+        for col_i, colname := range ctp {
+            // fmt.Printf("colname: %v", colname)
+            obj_map[colname] = obj[col_i]
+            // obj_map_index += 1
         }
 
         collection.InsertObject(obj_map)

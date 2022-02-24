@@ -42,12 +42,7 @@ def main(args):
 
     test_tuple = (69, 'stuff', 3.3, True)
     ttmd = marshal.dumps(test_tuple)
-    print(ttmd)
-    print(len(ttmd))
-    #for ttm in ttmd:
-    #    print(str(ttm))
 
-    print("entering go")
     print(pydc.Insert(
         "testcoll".encode('utf-8'),
         marshal.dumps(test_tuple),
