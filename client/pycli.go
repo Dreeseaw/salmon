@@ -7,10 +7,8 @@ package main
 import "C"
 
 import (
-    "fmt"
+//     "fmt"
     "unsafe"
-
-    marshal "github.com/dreeseaw/pydc/gomarsh"
 )
 
 var StorePtr *Store = nil
@@ -53,14 +51,13 @@ func AddCol(collection, colname, coltype *C.char) bool {
 //export Insert
 func Insert(coll *C.char, payload *C.char, p_size C.int) bool {
     cn := C.GoString(coll)
-    payload := C.GoBytes(unsafe.Pointer(payload), p_size)
-    if obj, err := marshal.r_tuple(payload); err == nil {
-        if err = StorePtr.InsertObj(cn, obj); err != nil {
-            return false
-        }
+    go_bytes := C.GoBytes(unsafe.Pointer(payload), p_size)
+    obj, err := r_tuple(go_bytes)
+    if err != nil {
+        return false
     }
 
-    if err = StorePtr.InsertObj(cn, obj); err != nil {
+    if err = StorePtr.AddObject(cn, obj); err != nil {
         return false
     }
 

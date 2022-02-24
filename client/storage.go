@@ -4,50 +4,23 @@
 */
 package main
 
-// #cgo pkg-config: python3
 // #include <stdlib.h>
-// #include <Python.h>
 import "C"
 import (
     "fmt"
     "errors"
-    "unsafe"
 
     "github.com/kelindar/column"
 )
 
 type ColFunc func() column.Column
 type CollTypeMap map[string]string
-type GoTypeFunc func(pyobj *C.PyObject) interface{} 
 
 var CollectionTypeMap = map[string]ColFunc{
     "string": column.ForString,
     "float": column.ForFloat64,
     "int": column.ForInt64,
     "bool": column.ForBool,
-}
-
-func PyToGoString(pyobj *C.PyObject) interface{} {
-    return C.PyByteArray_AsString(pyobj)
-}
-
-func PyToGoFloat(pyobj *C.PyObject) interface{} {
-    return C.PyFloat_AsDouble(pyobj)
-}
-
-func PyToGoInt(pyobj *C.PyObject) interface{} {
-    return C.PyLong_AsLong(pyobj)
-}
-
-func PyToGoBool(pyobj *C.PyObject) interface{} {
-    return !(C.PyLong_AsLong(pyobj) == 0)
-}
-
-var GoTypeFuncMap = map[string]GoTypeFunc{
-    "string": PyToGoString,
-    "float": PyToGoFloat,
-    "int": PyToGoInt,
-    "bool": PyToGoBool,
 }
 
 type Store struct {
@@ -96,10 +69,15 @@ func (s *Store) AddColumn(coll, cn, ct string) error {
 func (s *Store) AddObject(coll string, obj []interface{}) error {
     if collection, exists := s.CollMap[coll]; exists {
         ctp, _ := s.CollMetadataMap[coll]
-        for colname, coltype := range ctp {
-            // something with each map index?
+        obj_map := make(map[string]interface{})
+        obj_map_index := 0
+
+        for colname, _ := range ctp {
+            obj_map[colname] = obj[obj_map_index]
+            obj_map_index += 1
         }
-        collection.InsertObject(tmpobj)
+
+        collection.InsertObject(obj_map)
         return nil
     }
     return errors.New("Collection does not exist")
