@@ -49,7 +49,7 @@ func r_float(p []byte, index *int) float64 {
 }
 
 // given payload, return a mock python tuple
-func unmarshal_tuple(payload []byte) ([]interface{}, error) {
+func r_tuple(payload []byte) ([]interface{}, error) {
 
     curIndex := 0
 

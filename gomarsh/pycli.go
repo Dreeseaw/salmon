@@ -17,7 +17,7 @@ func TestFunc(payload *C.char, p_size C.int) bool {
     // p_len := len(C.GoString(payload))
 
     p_gb := C.GoBytes(unsafe.Pointer(payload), p_size)
-    tmp_obj, err := unmarshal_tuple(p_gb)
+    tmp_obj, err := r_tuple(p_gb)
     if err != nil {
         panic(err)
     }
