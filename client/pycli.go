@@ -3,16 +3,14 @@
 */
 package main
 
-// #cgo pkg-config: python3
 // #include <stdlib.h>
-// #include <Python.h>
 import "C"
 
 import (
     "fmt"
     "unsafe"
-    
-//    py3 "github.com/go-python/cpy3" 
+
+    marshal "github.com/dreeseaw/pydc/gomarsh"
 )
 
 var StorePtr *Store = nil
@@ -54,24 +52,18 @@ func AddCol(collection, colname, coltype *C.char) bool {
 
 //export Insert
 func Insert(coll *C.char, payload *C.char, p_size C.int) bool {
-    // cn := C.GoString(coll)
-    // p_len := len(C.GoString(payload))
-
-    p_gb := C.GoBytes(unsafe.Pointer(payload), p_size)
-    for one_byte := range p_gb {
-        fmt.Printf("b")
-        fmt.Printf(string(one_byte))
+    cn := C.GoString(coll)
+    payload := C.GoBytes(unsafe.Pointer(payload), p_size)
+    if obj, err := marshal.r_tuple(payload); err == nil {
+        if err = StorePtr.InsertObj(cn, obj); err != nil {
+            return false
+        }
     }
 
-    // b := make([]byte, 24)
-    // b = (*[1<<30]byte)(unsafe.Pointer(&payload))[0:24]
-    // for one_byte := range b {
-    //     fmt.Printf(string(one_byte))
-    // }
-    // obj := (*C.PyObject)(pyobj)
-    // if err := StorePtr.AddObject(cn, obj); err != nil {
-    //     return false
-    // }
+    if err = StorePtr.InsertObj(cn, obj); err != nil {
+        return false
+    }
+
     return true
 }
 

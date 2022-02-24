@@ -92,20 +92,12 @@ func (s *Store) AddColumn(coll, cn, ct string) error {
     return errors.New("Collection does not exist")
 }
 
-func (s *Store) AddObject(coll string, obj []byte) error {
+// yep need generics
+func (s *Store) AddObject(coll string, obj []interface{}) error {
     if collection, exists := s.CollMap[coll]; exists {
         ctp, _ := s.CollMetadataMap[coll]
-        tmpobj := make(map[string]interface{})
-        odir := C.PyObject_Dir(obj)
-        ostr := C.PyByteArray_AsString(odir)
-        gostr := C.GoString(ostr)
-        fmt.Printf(gostr)
-
         for colname, coltype := range ctp {
-            colname_c := C.CString(colname)
-            defer C.free(unsafe.Pointer(colname_c))
-            type_obj := C.PyObject_GetAttrString(obj, colname_c)
-            tmpobj[colname] = GoTypeFuncMap[coltype](type_obj)
+            // something with each map index?
         }
         collection.InsertObject(tmpobj)
         return nil
