@@ -9,7 +9,7 @@ def main(args):
     lib_path = os.path.join(args[1] if len(args) > 1 else default_path, default_fn) 
     pydc = cdll.LoadLibrary(lib_path)
 
-    test_tuple = (63728, 'stuff', 2.5, False)
+    test_tuple = (63728, 'stuff', 53425.256235, False)
     print(test_tuple)
     ttmd = marshal.dumps(test_tuple)
 

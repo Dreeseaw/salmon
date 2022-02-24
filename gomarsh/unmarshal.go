@@ -6,7 +6,9 @@ package main
 
 import (
     "fmt"
-    "strconv"
+    // "strconv"
+    "encoding/binary"
+    "math"
 )
 
 var (
@@ -42,9 +44,8 @@ func r_long(p []byte, index *int) int32 {
 // cut and return float64 from p
 func r_float(p []byte, index *int) float64 {
     float_bytes := r_string(p, 8, index)
-    var ret float64
-    ret, _ = strconv.ParseFloat(string(float_bytes), 64)
-    return ret
+    bits := binary.LittleEndian.Uint64(float_bytes)
+    return math.Float64frombits(bits)
 }
 
 // given payload, return a mock python tuple
@@ -84,7 +85,7 @@ func unmarshal_tuple(payload []byte) ([]interface{}, error) {
             // string type
             str_len := r_byte(payload, &curIndex)
             val := r_string(payload, (int)(str_len), &curIndex)
-            tmp_tuple[tuple_pos] = val
+            tmp_tuple[tuple_pos] = (string)(val)
         } else if obj_type == 70 {
             // false bool 
             tmp_tuple[tuple_pos] = false
