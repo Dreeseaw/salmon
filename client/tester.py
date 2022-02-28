@@ -5,30 +5,24 @@ from ctypes import *
 default_path = 'bin/'
 default_fn   = 'pydc_client.so' 
 
-class TestObject(Structure):
-    _fields_ = [
-            ("testcol", c_int64),
-            ("testcolstr", c_char_p),
-            ("testcolflo", c_double),
-            ("testcolbool", c_bool)]
-
 def main(args):
     lib_path = os.path.join(args[1] if len(args) > 1 else default_path, default_fn) 
     pydc = cdll.LoadLibrary(lib_path)
 
-    print(pydc.Initstore())
-    print(pydc.Newcoll("testcoll".encode('utf-8')))
+    collection = "testcoll"
 
-    print(pydc.AddCol(
+    pydc.Initstore()
+    pydc.Newcoll("testcoll".encode('utf-8'))
+    pydc.AddCol(
         "testcoll".encode('utf-8'),
         "testcol".encode('utf-8'), 
         "int".encode('utf-8'),
-    ))
-    print(pydc.AddCol(
+    )
+    pydc.AddCol(
         "testcoll".encode('utf-8'),
         "testcolstr".encode('utf-8'), 
         "string".encode('utf-8'),
-    ))
+    )
     pydc.AddCol(
         "testcoll".encode('utf-8'),
         "testcolflo".encode('utf-8'), 
@@ -39,15 +33,26 @@ def main(args):
         "testcolbool".encode('utf-8'), 
         "bool".encode('utf-8'),
     )
+    print(collection, " coll created")
 
     test_tuple = (69, 'stuff', 3.3, True)
     ttmd = marshal.dumps(test_tuple)
 
-    print(pydc.Insert(
+    pydc.Insert(
         "testcoll".encode('utf-8'),
         marshal.dumps(test_tuple),
         len(ttmd),
-    ))
+    )
+
+    selectors = [
+        ('testcolstr', 'stuff'),
+        ('testcol', 69),
+    ]
+    pydc.Select(
+        "testcoll".encode('utf-8'),
+        marshal.dumps(selectors)
+    )
+
     print('done')
 
 

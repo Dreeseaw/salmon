@@ -52,7 +52,7 @@ func AddCol(collection, colname, coltype *C.char) bool {
 func Insert(coll *C.char, payload *C.char, p_size C.int) bool {
     cn := C.GoString(coll)
     go_bytes := C.GoBytes(unsafe.Pointer(payload), p_size)
-    obj, err := r_tuple(go_bytes)
+    obj, err := r_object(go_bytes, 0)
     if err != nil {
         return false
     }
@@ -64,8 +64,8 @@ func Insert(coll *C.char, payload *C.char, p_size C.int) bool {
     return true
 }
 
-//export Get
-func Get(coll string) bool {
+//export Select
+func Select(coll string, selector *C.char, s_size C.int) bool {
     return false
 }
 

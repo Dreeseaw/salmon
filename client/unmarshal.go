@@ -12,8 +12,12 @@ import (
 )
 
 var (
-    TUPLE_TYPE_BYTE uint8 = 169
-
+    TUPLE_TYPE_BYTE  uint8 = 169
+    INT_TYPE_BYTE    uint8 = 233
+    FLOAT_TYPE_BYTE  uint8 = 231 
+    STR_TYPE_BYTE    uint8 = 218
+    TRUE_TYPE_BYTE   uint8 = 84
+    FALSE_TYPE_BYTE  uint8 = 70
 )
 
 // cut and return 1 byte from p
@@ -48,53 +52,49 @@ func r_float(p []byte, index *int) float64 {
     return math.Float64frombits(bits)
 }
 
-// given payload, return a mock python tuple
-func r_tuple(payload []byte) ([]interface{}, error) {
+// given payload, return a mock python object
+func r_object(payload []byte, index *int) ([]interface{}, error) {
 
     curIndex := 0
-
-    // read 'tuple' type to validate
-    tuple_type_byte := r_byte(payload, &curIndex)
-    if (uint8)(tuple_type_byte) != TUPLE_TYPE_BYTE {
-        return nil, fmt.Errorf("tuple type incorrect: %v", (uint8)(tuple_type_byte))
-    }
-
-    // read tuple_len
-    tuple_len_byte := r_byte(payload, &curIndex)
-    tuple_len := (uint8)(tuple_len_byte)
-    if tuple_len == 0 {
-        return nil, fmt.Errorf("tuple len is 0")
-    }
-
-    tmp_tuple := make([]interface{}, tuple_len)
-
-    for tuple_pos, _ := range tmp_tuple {
+    tmp_object := make([]interface{}, 1)
         
-        obj_type_byte := r_byte(payload, &curIndex)
-        obj_type := (uint8)(obj_type_byte)
+    obj_type_byte := r_byte(payload, &curIndex)
+    obj_type := (uint8)(obj_type_byte)
 
-        if obj_type == 233 {
-            // int type
-            val := r_long(payload, &curIndex)
-            tmp_tuple[tuple_pos] = (int32)(val)
-        } else if obj_type == 231 {
-            // float type
-            val := r_float(payload, &curIndex)
-            tmp_tuple[tuple_pos] = (float64)(val)
-        } else if obj_type == 218 {
-            // string type
-            str_len := r_byte(payload, &curIndex)
-            val := r_string(payload, (int)(str_len), &curIndex)
-            tmp_tuple[tuple_pos] = (string)(val)
-        } else if obj_type == 70 {
-            // false bool 
-            tmp_tuple[tuple_pos] = false
-        } else if obj_type == 84 {
-            // true bool
-            tmp_tuple[tuple_pos] = true
-        } else {
-            return nil, fmt.Errorf("type not recognized: %v", (uint8)(obj_type))
+    if obj_type == TUPLE_TYPE_BYTE {
+        tuple_len_byte := r_byte(payload, &curIndex)
+        tuple_len := (uint8)(tuple_len_byte)
+        if tuple_len == 0 {
+            return nil, fmt.Errorf("tuple len is 0")
         }
+
+        tmp_tuple := make([]interface{}, tuple_len)
+
+        for tuple_pos, _ := range tmp_tuple {
+            tmp_tuple_obj := r_object(payload, curIndex)
+        }
+
+    } else if obj_type == INT_TYPE_BYTE {
+        val := r_long(payload, &curIndex)
+        tmp_tuple[tuple_pos] = (int32)(val)
+
+    } else if obj_type == FLOAT_TYPE_BYTE {
+        val := r_float(payload, &curIndex)
+        tmp_tuple[tuple_pos] = (float64)(val)
+    
+    } else if obj_type == STR_TYPE_BYTE {
+        str_len := r_byte(payload, &curIndex)
+        val := r_string(payload, (int)(str_len), &curIndex)
+        tmp_tuple[tuple_pos] = (string)(val)
+    
+    } else if obj_type == TRUE_TYPE_BYTE {
+        tmp_tuple[tuple_pos] = true
+
+    } else if obj_type == FALSE_TYPE_BYTE {
+        tmp_tuple[tuple_pos] = false
+    
+    } else {
+        return nil, fmt.Errorf("type not recognized: %v", (uint8)(obj_type))
     }
 
     return tmp_tuple, nil
