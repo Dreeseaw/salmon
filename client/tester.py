@@ -5,6 +5,14 @@ from ctypes import *
 default_path = 'bin/'
 default_fn   = 'pydc_client.so' 
 
+def insert(dc, coll, tuppy):
+    marshed = marshal.dumps(tuppy)
+    dc.Insert(
+        coll.encode('utf-8'),
+        marshed,
+        len(marshed),
+    )
+
 def main(args):
     lib_path = os.path.join(args[1] if len(args) > 1 else default_path, default_fn) 
     pydc = cdll.LoadLibrary(lib_path)
@@ -35,14 +43,7 @@ def main(args):
     )
     print(collection, " coll created")
 
-    test_tuple = (69, 'stuff', 3.3, True)
-    ttmd = marshal.dumps(test_tuple)
-
-    pydc.Insert(
-        "testcoll".encode('utf-8'),
-        marshal.dumps(test_tuple),
-        len(ttmd),
-    )
+    insert(pydc, "testcoll", (235, 'stuff', 3.3, True))
 
     selectors = [
         ('testcolstr', 'stuff'),

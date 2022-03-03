@@ -83,3 +83,23 @@ func (s *Store) AddObject(coll string, obj []interface{}) error {
 	}
 	return errors.New("Collection does not exist")
 }
+
+func (s *Store) Select(coll string, selectors map[string]string) error {
+    collection, exists := s.CollMap[coll]
+    if !exists {
+        return errors.New("Coll name does not exist")
+    }
+    ctp, _ := s.CollMetadataMap[coll]
+    collection.Query(func(txn *column.Txn) error {
+        for colname, colval := range selectors {
+            coltype, _ := ctp[colname]
+            if coltype == "string" {
+                txn.WithString(colname, func(v string) bool {
+                    return v == colval
+                })
+            }
+        }
+        return nil
+    })
+
+}

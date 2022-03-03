@@ -66,6 +66,14 @@ func Insert(coll *C.char, payload *C.char, p_size C.int) bool {
 
 //export Select
 func Select(coll string, selector *C.char, s_size C.int) bool {
+    if s_size != 0 {
+        sel_obj, err := r_object(
+            C.GoBytes(unsafe.Pointer(payload), s_size),
+            nil,
+        )
+    }
+    // make map
+    StorePtr.Select(coll, selectors)
 	return false
 }
 
