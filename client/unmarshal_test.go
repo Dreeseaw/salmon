@@ -46,3 +46,17 @@ func TestR_float(t *testing.T) {
     assert.Equal(t, target, func_ret)
     assert.Equal(t, testIndex, 8)
 }
+
+func testR_object_simple_tuple(t *testing.T) {
+    data := []byte{169,3,84,231,51,51,51,51,51,51,243,63,218,4,116,101,115,116}
+    target := []interface{}{true, (float64)(1.2), "test"}
+
+    func_ret, _ := r_object(data, nil)
+    for ret_pos, _ := range func_ret {
+        assert.Equal(t, func_ret[ret_pos], target[ret_pos])
+    }
+}
+
+// func testR_object_simple_tuple(t *testing.T) {
+    
+// }

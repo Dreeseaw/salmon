@@ -52,7 +52,7 @@ func AddCol(collection, colname, coltype *C.char) bool {
 func Insert(coll *C.char, payload *C.char, p_size C.int) bool {
     cn := C.GoString(coll)
     go_bytes := C.GoBytes(unsafe.Pointer(payload), p_size)
-    obj, err := r_object(go_bytes, 0)
+    obj, err := r_object(go_bytes, nil)
     if err != nil {
         return false
     }
