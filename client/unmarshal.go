@@ -6,6 +6,7 @@ package main
 
 import (
     "fmt"
+    "log"
     // "strconv"
     "encoding/binary"
     "math"
@@ -18,7 +19,7 @@ var (
     STR_TYPE_BYTE    uint8 = 218
     TRUE_TYPE_BYTE   uint8 = 84
     FALSE_TYPE_BYTE  uint8 = 70
-    LIST_TYPE_BYTE   uint8 = 219
+    LIST_TYPE_BYTE   uint8 = 91
 )
 
 // cut and return 1 byte from p
@@ -57,10 +58,11 @@ func r_float(p []byte, index *int) float64 {
 func r_object(payload []byte, curIndex *int) ([]interface{}, error) {
 
     if curIndex == nil {
+        curIndex = new(int)
         *curIndex = 0
     }
 
-    var err error
+    //var err error
     tmp_object := make([]interface{}, 1)
     obj_type_byte := r_byte(payload, curIndex)
     obj_type := (uint8)(obj_type_byte)
@@ -75,8 +77,14 @@ func r_object(payload []byte, curIndex *int) ([]interface{}, error) {
         tmp_tuple := make([]interface{}, tuple_len)
 
         for tuple_pos, _ := range tmp_tuple {
-            if tmp_tuple[tuple_pos], err = r_object(payload, curIndex); err != nil {
+            tmp_tuple_obj, err := r_object(payload, curIndex)
+            if err != nil {
                 return nil, err
+            }
+            if len(tmp_tuple_obj) == 1 {
+                tmp_tuple[tuple_pos] = tmp_tuple_obj[0]
+            } else {
+                tmp_tuple[tuple_pos] = tmp_tuple_obj
             }
         }
 
@@ -91,8 +99,15 @@ func r_object(payload []byte, curIndex *int) ([]interface{}, error) {
         tmp_list := make([]interface{}, list_len)
         
         for list_pos, _ := range tmp_list {
-            if tmp_list[list_pos], err = r_object(payload, curIndex); err != nil {
+            tmp_list_obj, err := r_object(payload, curIndex)
+            if err != nil {
                 return nil, err
+            }
+            if len(tmp_list_obj) == 1 {
+                tmp_list[list_pos] = tmp_list_obj[0]
+                log.Printf("%v", tmp_list[list_pos])
+            } else {
+                tmp_list[list_pos] = tmp_list_obj
             }
         }
 
