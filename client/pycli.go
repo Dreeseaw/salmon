@@ -7,7 +7,7 @@ package main
 import "C"
 
 import (
-	//     "fmt"
+	// "fmt"
 	"unsafe"
 )
 
@@ -65,16 +65,29 @@ func Insert(coll *C.char, payload *C.char, p_size C.int) bool {
 }
 
 //export Select
-func Select(coll string, selector *C.char, s_size C.int) bool {
-    if s_size != 0 {
-        sel_obj, err := r_object(
-            C.GoBytes(unsafe.Pointer(payload), s_size),
-            nil,
-        )
+func Select(coll *C.char, sel_payload *C.char, s_size C.int) bool {
+
+    coll_str := C.GoString(coll)
+
+    sel_list, err := r_object(
+        C.GoBytes(unsafe.Pointer(sel_payload), s_size),
+        nil,
+    )
+    if err != nil {
+        return false
     }
-    // make map
-    StorePtr.Select(coll, selectors)
-	return false
+
+    selectors := make(map[string]interface{})
+    for _, selector := range sel_list {
+        sel_tuple := selector.([]interface{})
+        selectors[sel_tuple[0].(string)] = sel_tuple[1]
+    }
+   
+    err = StorePtr.Select(coll_str, selectors)
+	if err != nil {
+        return false
+    }
+    return true
 }
 
 func main() {}

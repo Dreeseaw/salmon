@@ -55,7 +55,7 @@ func (s *Store) AddColumn(coll, cn, ct string) error {
 		if colfunc, exists := CollectionTypeMap[ct]; exists {
 			collection.CreateColumn(cn, colfunc())
 			ctp, _ := s.CollMetadataMap[coll]
-			s.CollMetadataMap[coll] = append(ctp, ct)
+			s.CollMetadataMap[coll] = append(ctp, cn)
 			return nil
 		}
 		fmt.Printf("Column type does not exist")
@@ -70,12 +70,10 @@ func (s *Store) AddObject(coll string, obj []interface{}) error {
 	if collection, exists := s.CollMap[coll]; exists {
 		ctp, _ := s.CollMetadataMap[coll]
 		obj_map := make(map[string]interface{})
-		// obj_map_index := 0
 
+        // list -> map w/ column names
 		for col_i, colname := range ctp {
-			// fmt.Printf("colname: %v", colname)
 			obj_map[colname] = obj[col_i]
-			// obj_map_index += 1
 		}
 
 		collection.InsertObject(obj_map)
@@ -84,22 +82,32 @@ func (s *Store) AddObject(coll string, obj []interface{}) error {
 	return errors.New("Collection does not exist")
 }
 
-func (s *Store) Select(coll string, selectors map[string]string) error {
+func (s *Store) Select(coll string, selectors map[string]interface{}) error {
+    
     collection, exists := s.CollMap[coll]
     if !exists {
-        return errors.New("Coll name does not exist")
+        return errors.New("Collection does not exist")
     }
-    ctp, _ := s.CollMetadataMap[coll]
+
+    // cursor := make([]interface{})
+
     collection.Query(func(txn *column.Txn) error {
+        // for testing
+        strs := txn.String("testcolstr")
+
         for colname, colval := range selectors {
-            coltype, _ := ctp[colname]
-            if coltype == "string" {
-                txn.WithString(colname, func(v string) bool {
-                    return v == colval
-                })
-            }
+            fmt.Println(colname, colval)
+            filtered_txn := txn.WithValue(colname, func(v interface{}) bool {
+                return v == colval
+            })
+            fmt.Println(filtered_txn.Count())
         }
+        return txn.Range(func (i uint32) {
+            toprint, _ := strs.Get()
+            fmt.Println(toprint)
+        })
         return nil
     })
 
+    return nil
 }

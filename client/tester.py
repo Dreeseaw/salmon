@@ -43,15 +43,21 @@ def main(args):
     )
     print(collection, " coll created")
 
-    insert(pydc, "testcoll", (235, 'stuff', 3.3, True))
+    for i in range(0,100):
+        insert(pydc, "testcoll", (235+i, 'stuff', 3.3, True))
+    for i in range(0,100):
+        insert(pydc, "testcoll", (235+i, 'more', 3.3, False))
 
-    selectors = [
-        ('testcolstr', 'stuff'),
-        ('testcol', 69),
-    ]
+    print("post-insert")
+
+    selectors = marshal.dumps([
+        ('testcol', 238),
+        ('testcolstr', 'more'),
+    ])
     pydc.Select(
         "testcoll".encode('utf-8'),
-        marshal.dumps(selectors)
+        selectors,
+        len(selectors),
     )
 
     print('done')
