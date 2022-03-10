@@ -51,13 +51,19 @@ def main(args):
     print("post-insert")
 
     selectors = marshal.dumps([
-        ('testcol', 238),
+        'testcol',
+        'testcolstr',
+    ])
+    filters = marshal.dumps([
+        #('testcol', 238),
         ('testcolstr', 'more'),
     ])
     pydc.Select(
         "testcoll".encode('utf-8'),
         selectors,
         len(selectors),
+        filters,
+        len(filters),
     )
 
     print('done')

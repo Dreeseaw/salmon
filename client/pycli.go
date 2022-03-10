@@ -65,9 +65,23 @@ func Insert(coll *C.char, payload *C.char, p_size C.int) bool {
 }
 
 //export Select
-func Select(coll *C.char, sel_payload *C.char, s_size C.int) bool {
+func Select(coll *C.char, sel_payload *C.char, s_size C.int, filt_payload *C.char, f_size C.int) bool {
 
     coll_str := C.GoString(coll)
+
+    filt_list, err := r_object(
+        C.GoBytes(unsafe.Pointer(filt_payload), f_size),
+        nil,
+    )
+    if err != nil {
+        return false
+    }
+
+    filters := make(map[string]interface{})
+    for _, filter := range filt_list {
+        filt_tuple := filter.([]interface{})
+        filters[filt_tuple[0].(string)] = filt_tuple[1]
+    }
 
     sel_list, err := r_object(
         C.GoBytes(unsafe.Pointer(sel_payload), s_size),
@@ -77,13 +91,12 @@ func Select(coll *C.char, sel_payload *C.char, s_size C.int) bool {
         return false
     }
 
-    selectors := make(map[string]interface{})
-    for _, selector := range sel_list {
-        sel_tuple := selector.([]interface{})
-        selectors[sel_tuple[0].(string)] = sel_tuple[1]
+    selectors := make([]string, len(sel_list))
+    for s_i, selector := range sel_list {
+        selectors[s_i] = selector.(string)
     }
-   
-    err = StorePtr.Select(coll_str, selectors)
+
+    err = StorePtr.Select(coll_str, selectors, filters)
 	if err != nil {
         return false
     }
