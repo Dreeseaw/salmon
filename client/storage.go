@@ -9,13 +9,11 @@ import "C"
 import (
 	"errors"
 	"fmt"
-//     "reflect"
 
 	"github.com/kelindar/column"
 )
 
 type ColFunc func() column.Column
-type ColReaderFunc func(*column.Txn, string) column.Reader
 type CollTypeList []ColMetadata
 
 var CollectionTypeMap = map[string]ColFunc{
@@ -25,21 +23,9 @@ var CollectionTypeMap = map[string]ColFunc{
 	"bool":   column.ForBool,
 }
 
-/*
-var ColumnReaderMap = map[string]ColReaderFunc{
-    "string": (*column.Txn).String,
-    "float":  (*column.Txn).Float64,
-    "int":    (*column.Txn).Int32,
-    "bool":   (*column.Txn).Bool,
-}
-*/
-
-// type ColReader = column.anyWriter
-
 type ColMetadata struct {
     Name   string
     Type   string
-    // Reader column.Reader
 }
 
 type Store struct {
@@ -95,7 +81,6 @@ func (s *Store) AddObject(coll string, obj []interface{}) error {
 		ctp, _ := s.CollMetadataMap[coll]
 		obj_map := make(map[string]interface{})
 
-        // list -> map w/ column names
 		for col_i, col_meta := range ctp {
 			obj_map[col_meta.Name] = obj[col_i]
 		}
@@ -106,45 +91,19 @@ func (s *Store) AddObject(coll string, obj []interface{}) error {
 	return errors.New("Collection does not exist")
 }
 
-func (s *Store) Select(coll string, selectors []string, filters map[string]interface{}) error {
+// TODO buffer result rows back to user (cursor)
+// Select mocks a SQL-flavored select key word
+func (s *Store) Select(coll string, selectors []string, filters map[string]interface{}) ([]interface{}, error) {
     
     collection, exists := s.CollMap[coll]
     if !exists {
-        return errors.New("Collection does not exist")
+        return nil, errors.New("Collection does not exist")
     }
 
-    // collMeta, _ := s.CollMetadataMap[coll]
-    // selector_funcs := make([]column.Reader, len(selectors))
-
-    /*
-    for sel_i, sel := range selectors {
-        for _, col_meta := range collMeta {
-            if sel == col_meta.Name {
-                rd_func, _ := ColumnReaderMap[col_meta.Type]
-                selector_funcs[sel_i] = rd_func
-            }
-        }
-    }
-    */
-
-    // cursor := make([]interface{})
+    object_size := len(selectors)
+    result_rows := make([]interface{}, 0)
 
     collection.Query(func(txn *column.Txn) error {
-        // for testing
-        // strs := txn.String("testcolstr")
-
-        // create needed column readers
-        /*
-        colReaders := make(map[string]ColReader)
-        for _, sel := range selectors {
-            tmp_rd := txn.Any(sel)
-            colReaders[sel] = tmp_rd
-            fmt.Println(reflect.TypeOf(tmp_rd))
-            tp, _ := tmp_rd.Get()
-            fmt.Println("tp:")
-            fmt.Println(tp)
-        }
-        */
 
         // filter rows
         for colname, colval := range filters {
@@ -153,17 +112,17 @@ func (s *Store) Select(coll string, selectors []string, filters map[string]inter
             })
         }
 
-        // TODO add objects to cursor list
         return txn.Range(func (i uint32) {
-            for _, sel := range selectors {
-                //reader, _ := colReaders[sel]
+            row_obj := make([]interface{}, object_size)
+            for obj_pos, sel := range selectors {
                 reader := txn.Any(sel)
-                to_print, _ := reader.Get()
-                fmt.Println(to_print)
+                value, _ := reader.Get()
+                row_obj[obj_pos] = value
             }
+            result_rows = append(result_rows, row_obj)
         })
         return nil
     })
 
-    return nil
+    return result_rows, nil
 }

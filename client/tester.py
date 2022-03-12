@@ -16,6 +16,7 @@ def insert(dc, coll, tuppy):
 def main(args):
     lib_path = os.path.join(args[1] if len(args) > 1 else default_path, default_fn) 
     pydc = cdll.LoadLibrary(lib_path)
+    # pydc.Select.restype = POINTER(c_ubyte)
 
     collection = "testcoll"
 
@@ -50,6 +51,8 @@ def main(args):
 
     print("post-insert")
 
+    ret_len = POINTER(c_int)
+
     selectors = marshal.dumps([
         'testcol',
         'testcolstr',
@@ -58,13 +61,27 @@ def main(args):
         #('testcol', 238),
         ('testcolstr', 'more'),
     ])
-    pydc.Select(
+    result = pydc.Select(
         "testcoll".encode('utf-8'),
         selectors,
         len(selectors),
         filters,
         len(filters),
     )
+    print("Select result: ", result)
+
+    '''
+    print(ret_len)
+    print(ret_len[0])
+    res = list()
+    for i in range(0,500):
+        try:
+            res.append(results[i])
+        except:
+            print(i)
+    print(res)
+    print(marshal.loads(res))
+    '''
 
     print('done')
 
