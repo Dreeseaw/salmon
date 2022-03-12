@@ -57,14 +57,17 @@ func (s *Store) NewCollection(name string) error {
 
 func (s *Store) AddColumn(coll, cn, ct string) error {
 	if collection, exists := s.CollMap[coll]; exists {
+        ctp, _ := s.CollMetadataMap[coll]
+        for _, colMeta := range ctp {
+            if cn == colMeta.Name {
+                return errors.New("Column name already exists")
+            }
+        }
 		if colfunc, exists := CollectionTypeMap[ct]; exists {
 			collection.CreateColumn(cn, colfunc())
-			ctp, _ := s.CollMetadataMap[coll]
-            //reader_func, _ := ColumnReaderMap[cn]
 			s.CollMetadataMap[coll] = append(ctp, ColMetadata{
                 Name: cn,
                 Type: ct,
-            //    Reader: reader_func,
             })
 			return nil
 		}
@@ -75,7 +78,7 @@ func (s *Store) AddColumn(coll, cn, ct string) error {
 	return errors.New("Collection does not exist")
 }
 
-// yep need generics
+// AddObject adds an object to a collection, does not mock SQl insert
 func (s *Store) AddObject(coll string, obj []interface{}) error {
 	if collection, exists := s.CollMap[coll]; exists {
 		ctp, _ := s.CollMetadataMap[coll]
@@ -93,7 +96,7 @@ func (s *Store) AddObject(coll string, obj []interface{}) error {
 
 // TODO buffer result rows back to user (cursor)
 // Select mocks a SQL-flavored select key word
-func (s *Store) Select(coll string, selectors []string, filters map[string]interface{}) ([]interface{}, error) {
+func (s *Store) Select(coll string, selectors []string, filters map[string]interface{}) ([]column.Object, error) {
     
     collection, exists := s.CollMap[coll]
     if !exists {
@@ -101,7 +104,7 @@ func (s *Store) Select(coll string, selectors []string, filters map[string]inter
     }
 
     object_size := len(selectors)
-    result_rows := make([]interface{}, 0)
+    result_rows := make([]column.Object, 0)
 
     collection.Query(func(txn *column.Txn) error {
 
@@ -113,11 +116,11 @@ func (s *Store) Select(coll string, selectors []string, filters map[string]inter
         }
 
         return txn.Range(func (i uint32) {
-            row_obj := make([]interface{}, object_size)
-            for obj_pos, sel := range selectors {
+            row_obj := make(column.Object, object_size)
+            for _, sel := range selectors {
                 reader := txn.Any(sel)
                 value, _ := reader.Get()
-                row_obj[obj_pos] = value
+                row_obj[sel] = value
             }
             result_rows = append(result_rows, row_obj)
         })
