@@ -103,10 +103,15 @@ func (s *Store) Select(coll string, selectors []string, filters map[string]inter
         return nil, errors.New("Collection does not exist")
     }
 
-    object_size := len(selectors)
     result_rows := make([]column.Object, 0)
 
     collection.Query(func(txn *column.Txn) error {
+
+        // create row readers before filter & range
+        readerMap := make(map[string]column.anyWriter)
+        for _, sel := range selectors {
+            rd := txn.Any(sel)
+        }
 
         // filter rows
         for colname, colval := range filters {
@@ -116,10 +121,10 @@ func (s *Store) Select(coll string, selectors []string, filters map[string]inter
         }
 
         return txn.Range(func (i uint32) {
-            row_obj := make(column.Object, object_size)
+            row_obj := make(column.Object)
             for _, sel := range selectors {
-                reader := txn.Any(sel)
-                value, _ := reader.Get()
+                rd, _ := readerMap[sel]
+                value, _ := rd.Get()
                 row_obj[sel] = value
             }
             result_rows = append(result_rows, row_obj)
