@@ -90,12 +90,14 @@ func Test_Select(t *testing.T) {
     _ = test_store.AddColumn("test_coll", "testcolumnbool", "bool")
     
     for i := 0; i < 20; i++ {
-        test_obj := []interface{}{(int32)(i),"tester",(float64)(73.8),false}
-        test_store.AddObject("test_coll", test_obj)
+        for j := 0; j < 20; j++ {
+            test_obj := []interface{}{(int32)(i),"tester",(float64)(j),false}
+            test_store.AddObject("test_coll", test_obj)
+        }
     }
     
     filters := map[string]interface{}{
-        "testcolumnint": 13,
+        "testcolumnint": (int32)(13),
         "testcolumnstr": "tester",
     }
     result, _ := test_store.Select(
@@ -104,6 +106,11 @@ func Test_Select(t *testing.T) {
         filters,
     )
     
-    fmt.Println(result)
-    assert.Equal(t, len(result), 1)
+    for _, res_obj := range result {
+        val, _ := res_obj["testcolumnint"]
+        assert.Equal(t, (int32)(13), val.(int32))
+    }
+
+    fmt.Println(result) // print on fail
+    assert.Equal(t, 20, len(result))
 }

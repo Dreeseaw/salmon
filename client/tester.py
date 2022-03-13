@@ -44,14 +44,12 @@ def main(args):
     )
     print(collection, " coll created")
 
-    for i in range(0,100):
+    for i in range(0,30):
         insert(pydc, "testcoll", (235+i, 'stuff', 3.3, True))
-    for i in range(0,100):
+    for i in range(0,30):
         insert(pydc, "testcoll", (235+i, 'more', 3.3, False))
 
     print("post-insert")
-
-    ret_len = POINTER(c_int)
 
     selectors = marshal.dumps([
         'testcol',

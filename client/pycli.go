@@ -108,10 +108,10 @@ func Select(
     }
 
     // print results out for now
-    for res_row := range results {
+    for _, res_row := range results {
         fmt.Println(res_row)
     }
-    return 1
+    return (C.int)(len(results))
 
     // marshaled_rows, err := w_object(results)
     // ret_size = (*C.int)((unsafe.Pointer)(len(marshaled_rows)))
