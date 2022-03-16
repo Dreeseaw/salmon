@@ -107,12 +107,6 @@ func (s *Store) Select(coll string, selectors []string, filters map[string]inter
 
     collection.Query(func(txn *column.Txn) error {
 
-        // create row readers before filter & range
-        readerMap := make(map[string]column.AnyWriter)
-        for _, sel := range selectors {
-            readerMap[sel] = txn.Any(sel)
-        }
-
         // filter rows
         for colname, colval := range filters {
             txn = txn.WithValue(colname, func(v interface{}) bool {
@@ -120,12 +114,11 @@ func (s *Store) Select(coll string, selectors []string, filters map[string]inter
             })
         }
 
+        // range and return selected data
         return txn.Range(func (i uint32) {
-            fmt.Println(i)
             row_obj := make(column.Object)
             for _, sel := range selectors {
-                rd, _ := readerMap[sel]
-                value, _ := rd.Get()
+                value, _ := txn.Any(sel).Get()
                 row_obj[sel] = value
             }
             result_rows = append(result_rows, row_obj)
