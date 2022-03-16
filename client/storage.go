@@ -14,13 +14,18 @@ import (
 )
 
 type ColFunc func() column.Column
-type CollTypeList []string
+type CollTypeList []ColMetadata
 
 var CollectionTypeMap = map[string]ColFunc{
 	"string": column.ForString,
 	"float":  column.ForFloat64,
 	"int":    column.ForInt32,
 	"bool":   column.ForBool,
+}
+
+type ColMetadata struct {
+    Name   string
+    Type   string
 }
 
 type Store struct {
@@ -52,10 +57,18 @@ func (s *Store) NewCollection(name string) error {
 
 func (s *Store) AddColumn(coll, cn, ct string) error {
 	if collection, exists := s.CollMap[coll]; exists {
+        ctp, _ := s.CollMetadataMap[coll]
+        for _, colMeta := range ctp {
+            if cn == colMeta.Name {
+                return errors.New("Column name already exists")
+            }
+        }
 		if colfunc, exists := CollectionTypeMap[ct]; exists {
 			collection.CreateColumn(cn, colfunc())
-			ctp, _ := s.CollMetadataMap[coll]
-			s.CollMetadataMap[coll] = append(ctp, ct)
+			s.CollMetadataMap[coll] = append(ctp, ColMetadata{
+                Name: cn,
+                Type: ct,
+            })
 			return nil
 		}
 		fmt.Printf("Column type does not exist")
@@ -65,21 +78,53 @@ func (s *Store) AddColumn(coll, cn, ct string) error {
 	return errors.New("Collection does not exist")
 }
 
-// yep need generics
+// AddObject adds an object to a collection, does not mock SQl insert
 func (s *Store) AddObject(coll string, obj []interface{}) error {
 	if collection, exists := s.CollMap[coll]; exists {
 		ctp, _ := s.CollMetadataMap[coll]
 		obj_map := make(map[string]interface{})
-		// obj_map_index := 0
 
-		for col_i, colname := range ctp {
-			// fmt.Printf("colname: %v", colname)
-			obj_map[colname] = obj[col_i]
-			// obj_map_index += 1
+		for col_i, col_meta := range ctp {
+			obj_map[col_meta.Name] = obj[col_i]
 		}
 
 		collection.InsertObject(obj_map)
 		return nil
 	}
 	return errors.New("Collection does not exist")
+}
+
+// TODO buffer result rows back to user (cursor)
+// Select mocks a SQL-flavored select key word
+func (s *Store) Select(coll string, selectors []string, filters map[string]interface{}) ([]column.Object, error) {
+    
+    collection, exists := s.CollMap[coll]
+    if !exists {
+        return nil, errors.New("Collection does not exist")
+    }
+
+    result_rows := make([]column.Object, 0)
+
+    collection.Query(func(txn *column.Txn) error {
+
+        // filter rows
+        for colname, colval := range filters {
+            txn = txn.WithValue(colname, func(v interface{}) bool {
+                return v == colval
+            })
+        }
+
+        // range and return selected data
+        return txn.Range(func (i uint32) {
+            row_obj := make(column.Object)
+            for _, sel := range selectors {
+                value, _ := txn.Any(sel).Get()
+                row_obj[sel] = value
+            }
+            result_rows = append(result_rows, row_obj)
+        })
+        return nil
+    })
+
+    return result_rows, nil
 }

@@ -7,7 +7,7 @@ package main
 import "C"
 
 import (
-	//     "fmt"
+	"fmt"
 	"unsafe"
 )
 
@@ -65,8 +65,60 @@ func Insert(coll *C.char, payload *C.char, p_size C.int) bool {
 }
 
 //export Select
-func Select(coll string, selector *C.char, s_size C.int) bool {
-	return false
+func Select(
+    coll *C.char,
+    sel_payload *C.char,
+    s_size C.int,
+    filt_payload *C.char,
+    f_size C.int,
+) C.int {
+
+    coll_str := C.GoString(coll)
+
+    filt_list, err := r_object(
+        C.GoBytes(unsafe.Pointer(filt_payload), f_size),
+        nil,
+    )
+    if err != nil {
+        return 0
+    }
+
+    filters := make(map[string]interface{})
+    for _, filter := range filt_list {
+        filt_tuple := filter.([]interface{})
+        filters[filt_tuple[0].(string)] = filt_tuple[1]
+    }
+
+    sel_list, err := r_object(
+        C.GoBytes(unsafe.Pointer(sel_payload), s_size),
+        nil,
+    )
+    if err != nil {
+        return 0 
+    }
+
+    selectors := make([]string, len(sel_list))
+    for s_i, selector := range sel_list {
+        selectors[s_i] = selector.(string)
+    }
+
+    results, err := StorePtr.Select(coll_str, selectors, filters)
+	if err != nil {
+        return 0
+    }
+
+    // print results out for now
+    for _, res_row := range results {
+        fmt.Println(res_row)
+    }
+    return (C.int)(len(results))
+
+    // marshaled_rows, err := w_object(results)
+    // ret_size = (*C.int)((unsafe.Pointer)(len(marshaled_rows)))
+    // c_rows := C.CBytes(marshaled_rows)
+    // defer C.free(c_rows)
+    // return (*C.uchar)(c_rows)
+
 }
 
 func main() {}
