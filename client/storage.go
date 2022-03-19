@@ -4,8 +4,6 @@
 */
 package main
 
-// #include <stdlib.h>
-import "C"
 import (
 	"errors"
 	"fmt"
@@ -96,7 +94,7 @@ func (s *Store) AddObject(coll string, obj []interface{}) error {
 
 // TODO buffer result rows back to user (cursor)
 // Select mocks a SQL-flavored select key word
-func (s *Store) Select(coll string, selectors []string, filters map[string]interface{}) ([]column.Object, error) {
+func (s *Store) Select(coll string, selectors []string, filters []filter) ([]column.Object, error) {
     
     collection, exists := s.CollMap[coll]
     if !exists {
@@ -108,9 +106,9 @@ func (s *Store) Select(coll string, selectors []string, filters map[string]inter
     collection.Query(func(txn *column.Txn) error {
 
         // filter rows
-        for colname, colval := range filters {
-            txn = txn.WithValue(colname, func(v interface{}) bool {
-                return v == colval
+        for _, f := range filters {
+            txn = txn.WithValue(f.ColName(), func(v interface{}) bool {
+                return f.Process(v)
             })
         }
 

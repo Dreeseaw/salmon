@@ -96,9 +96,17 @@ func Test_Select(t *testing.T) {
         }
     }
     
-    filters := map[string]interface{}{
-        "testcolumnint": (int32)(13),
-        "testcolumnstr": "tester",
+    filters := []filter{
+        IntFilter{
+            Col: "testcolumnint",
+            Op: "=",
+            Val: (int32)(13),
+        },
+        StringFilter{
+            Col: "testcolumnstr",
+            Op: "=",
+            Val: "tester",
+        },
     }
     result, _ := test_store.Select(
         "test_coll", 
