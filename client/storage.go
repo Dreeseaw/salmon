@@ -105,11 +105,20 @@ func (s *Store) Select(coll string, selectors []string, filters []filter) ([]col
 
     collection.Query(func(txn *column.Txn) error {
 
-        // filter rows
+        // filter rows, account for bool
         for _, f := range filters {
-            txn = txn.WithValue(f.ColName(), func(v interface{}) bool {
-                return f.Process(v)
-            })
+            bf, ok := f.(BoolFilter)
+            if ok {
+                if bf.Val {
+                    txn = txn.With(f.ColName())
+                } else {
+                    txn = txn.Without(f.ColName())
+                }
+            } else {
+                txn = txn.WithValue(f.ColName(), func(v interface{}) bool {
+                    return f.Process(v)
+                })
+            }
         }
 
         // range and return selected data

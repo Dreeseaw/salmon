@@ -79,6 +79,65 @@ func Test_AddObject(t *testing.T) {
     assert.Equal(t, bool_res, false)
 }
 
+func Test_Filtering(t *testing.T) {
+
+    test_store := NewStore()
+    test_store.NewCollection("test_coll")
+    
+    _ = test_store.AddColumn("test_coll", "testcolumnint", "int")
+    _ = test_store.AddColumn("test_coll", "testcolumnstr", "string")
+    _ = test_store.AddColumn("test_coll", "testcolumnfloat", "float")
+    err := test_store.AddColumn("test_coll", "testcolumnbool", "bool")
+    fmt.Println(err)
+
+    for i := 0; i < 20; i++ {
+        for j := 0; j < 20; j++ {
+            // obj_bool := (0 == (i*j % 2))
+            test_obj := []interface{}{(int32)(i),"tester",(float64)(j),false}
+            test_store.AddObject("test_coll", test_obj)
+        }
+    }
+
+    filters := []filter{
+        IntFilter{
+            Col: "testcolumnint",
+            Op: "<=",
+            Val: (int32)(6),
+        },
+        FloatFilter{
+            Col: "testcolumnfloat",
+            Op: ">",
+            Val: (float64)(10.5),
+        },
+        StringFilter{
+            Col: "testcolumnstr",
+            Op: "=",
+            Val: "tester",
+        },
+        BoolFilter{
+            Col: "testcolumnbool",
+            Op: "=",
+            Val: false,
+        },
+    }
+
+    result, _ := test_store.Select(
+        "test_coll", 
+        []string{"testcolumnint", "testcolumnfloat"},
+        filters,
+    )
+ 
+    /*
+    for _, res_obj := range result {
+        val, _ := res_obj["testcolumnint"]
+        assert.Equal(t, (int32)(13), val.(int32))
+    }
+    */
+
+    fmt.Println(result) // print on fail
+    assert.Equal(t, 63, len(result))
+}
+
 func Test_Select(t *testing.T) {
 
     test_store := NewStore()
@@ -119,6 +178,5 @@ func Test_Select(t *testing.T) {
         assert.Equal(t, (int32)(13), val.(int32))
     }
 
-    fmt.Println(result) // print on fail
     assert.Equal(t, 20, len(result))
 }

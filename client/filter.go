@@ -40,7 +40,7 @@ func (f StringFilter) Process(v interface{}) bool {
 }
 
 func (f BoolFilter) Process(v interface{}) bool {
-    return v.(bool) == f.Val
+    return (v == f.Val)
 }
 
 func (f IntFilter) Process(v interface{}) bool {
