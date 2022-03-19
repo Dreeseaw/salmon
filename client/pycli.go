@@ -7,7 +7,7 @@ package main
 import "C"
 
 import (
-	"fmt"
+//	"fmt"
 	"unsafe"
 )
 
@@ -64,6 +64,7 @@ func Insert(coll *C.char, payload *C.char, p_size C.int) bool {
 	return true
 }
 
+/*
 //export Select
 func Select(
     coll *C.char,
@@ -120,5 +121,6 @@ func Select(
     // return (*C.uchar)(c_rows)
 
 }
+*/
 
 func main() {}
