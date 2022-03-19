@@ -15,4 +15,4 @@ jobs:
         uses: actions/checkout@v2
       - name: Run Go tests
         run: go test ./...
-        working-directory: ./${{ matrix.project }}t
+        working-directory: ./${{ matrix.project }}
