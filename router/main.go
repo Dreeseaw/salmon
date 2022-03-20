@@ -1,7 +1,7 @@
 package main
 
 import (
-    "fmt"
+//    "fmt"
     "io/ioutil"
     "net/http"
     "gopkg.in/yaml.v3"
@@ -10,13 +10,23 @@ import (
     "github.com/labstack/echo/v4/middleware"
 )
 
+type GUID string
+type Partition int
+type PartitionList []Partition
+
+type ClientData struct {
+    Partitions map[string]PartitionList
+}
+
 type Server struct {
-    Tables map[string]Table
+    Tables   map[string]Table
+    Clients  map[GUID]ClientData
 }
 
 func NewServer() *Server {
     return &Server{
         Tables: make(map[string]Table),
+        Clients: make(map[GUID]ClientData),
     }
 }
 
@@ -33,8 +43,6 @@ func (s *Server) ReadConfig(filePath string) {
         panic(err)
     }
 
-    fmt.Println(data)
-
     for tName, tCols := range data {
         cols := make(map[string]column)
         for colName, colData := range tCols.(map[string]interface{}) {
@@ -45,13 +53,11 @@ func (s *Server) ReadConfig(filePath string) {
         }
         s.Tables[tName.(string)] = Table{Cols: cols}
     }
-
-    fmt.Println(s.Tables)
 }
 
 // TODO: add more metadata
 type column struct {
-    Type string
+    Type string `json:"type"` 
 }
 
 type Table struct {
@@ -65,11 +71,16 @@ func main() {
     e := echo.New()
 
     e.Use(middleware.Logger())
-    e.GET("/accept", s.accept)
+    e.GET("/accept", s.Accept)
 
     e.Logger.Fatal(e.Start(":1323"))
 }
 
-func (s *Server) accept(c echo.Context) error {
-    return c.String(http.StatusOK, "Hello, World!")
+// Accept a new client connection, send back table configs 
+func (s *Server) Accept(c echo.Context) error {
+    // get info from client
+
+
+    // return table configs
+    return c.JSON(http.StatusOK, s.Tables)
 }
