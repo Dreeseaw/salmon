@@ -1,11 +1,14 @@
 name: Push CI (Test)
-on: push
+on:
+  push:
+    branches:
+      - main
 jobs:
   buildchanges:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        project: [client]
+        project: [client, router]
     steps:
       - name: Set up Go for ${{ matrix.project }}
         uses: actions/setup-go@v2
