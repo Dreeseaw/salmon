@@ -16,16 +16,30 @@ type ColumnMetadata struct {
 type TableMetadata map[string]ColumnMetadata
 
 type Salmon struct {
-    ManagerThread *Manager
-    CommsThread   *CommsManager
+    ManagerThread  *Manager
+    CommsThread    *CommsManager
+    ManagerChannel chan Command
+    CommsChannel   chan Command
 }
 
 func NewSalmon() *Salmon {
-    man  := NewManager(ManagerOptions{})
-    comm := NewCommsManager(CommsManagerOptions{})
+    mc  := make(chan Command)
+    cmc := make(chan Command)
+    man  := NewManager(ManagerOptions{
+        ManChan: mc,
+        CommsChan: cmc,
+    })
+    comm := NewCommsManager(CommsManagerOptions{
+        RouterAddr: "http://localhost:1323",
+        ManChan: mc,
+        CommsChan: cmc,
+    })
+
     return &Salmon{
         ManagerThread: man,
         CommsThread: comm,
+        ManagerChannel: mc,
+        CommsChannel: cmc,
     }
 }
 
@@ -49,14 +63,31 @@ func (sal *Salmon) Start() error {
 }
 
 // Insert an object into the system
-func (sal *Salmon) Insert(object map[string]interface{}) error {
+func (sal *Salmon) Insert(table string, object map[string]interface{}) error {
     // validate object
+    cmd := InsertCommand{
+        TableName: table,
+        Obj: object,
+    }
 
-    // cache
+    // send to manager channel
+    sal.ManagerChannel <- cmd
 
     return nil
 }
 
-func (sal *Salmon) Select(selectors []string, filters []filter) error {
-    return nil    
+// Select queries a table in a SQL-ish fashion
+func (sal *Salmon) Select(table string, selectors []string, filters []filter) error {
+   
+    // create command
+    cmd := SelectCommand{
+        TableName: table,
+        Selectors: selectors,
+        Filters: filters,
+    }
+
+    // send to manchan
+    sal.ManagerChannel <- cmd
+
+    return nil
 }

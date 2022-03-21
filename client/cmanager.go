@@ -15,15 +15,21 @@ import (
 
 type CommsManagerOptions struct {
     RouterAddr string
+    ManChan   chan Command
+    CommsChan chan Command
 }
 
 type CommsManager struct {
     RouterAddr string
+    ManChan   chan Command
+    CommsChan chan Command
 }
 
 func NewCommsManager(cmo CommsManagerOptions) *CommsManager {
     return &CommsManager{
         RouterAddr: cmo.RouterAddr,
+        ManChan: cmo.ManChan,
+        CommsChan: cmo.CommsChan,
     }
 }
 
@@ -51,5 +57,8 @@ func (cm *CommsManager) Init() (map[string]TableMetadata, error) {
 
 // Start the communication manager
 func (cm *CommsManager) Start() {
+
+    // send heartbeats & get replicas? open server & accept stuff?
+
     return
 }
