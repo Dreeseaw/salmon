@@ -43,6 +43,7 @@ func (s *Server) ReadConfig(filePath string) {
         panic(err)
     }
 
+    //TODO: clean up type casting
     for tName, tCols := range data {
         cols := make(TableMetadata)
         for colName, colData := range tCols.(map[string]interface{}) {
