@@ -1,0 +1,66 @@
+// gRPC definitions for router service
+//
+// 
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+
+option go_package = "github.com/Dreeseaw/salmon/grpc";
+
+package RouterService;
+
+service RouterService {
+
+  // Insert a new object into system
+  rpc SendInsert(InsertCommand) returns (SuccessResponse) {}
+
+  // General query rpc
+  // load balance per-required-partition
+  rpc SendSelect(SelectCommand) returns (stream PartialResult) {}
+
+  // Stream replicated objects to clients for storage
+  rpc ReceiveReplicas(stream SuccessResponse) returns (stream InsertCommand) {}
+
+  // Stream load-balanced partial commands to clients
+  // for processing, read in PartialResults
+  rpc ProcessPartials(stream PartialResult) returns (stream SelectCommand) {}
+
+}
+
+// Base object type
+message Object {
+    repeated google.protobuf.Any field = 1;
+}
+
+// true = success, false = failures
+message SuccessResponse {
+    bool success = 1;
+    string id = 2;
+}
+
+message InsertCommand {
+    string iid = 1;
+    string table = 2;
+    Object obj = 3;
+}
+
+message Filter {
+    string colname = 1;
+    string operation = 2;
+    google.protobuf.Any val = 3;
+}
+
+// Sent to router to begin distributed selects, 
+// also sent to clients for partials processing
+message SelectCommand {
+    string qid = 1;
+    string table = 2;
+    repeated string selectors = 3;
+    repeated Filter filters = 4;
+}
+
+// Result streamed back to router 
+message PartialResult {
+    string qid = 1;
+    repeated Object objs = 2;
+}

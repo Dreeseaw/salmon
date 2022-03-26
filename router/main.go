@@ -19,13 +19,13 @@ type ClientData struct {
 }
 
 type Server struct {
-    Tables   map[string]Table
+    Tables   map[string]TableMetadata
     Clients  map[GUID]ClientData
 }
 
 func NewServer() *Server {
     return &Server{
-        Tables: make(map[string]Table),
+        Tables: make(map[string]TableMetadata),
         Clients: make(map[GUID]ClientData),
     }
 }
@@ -43,26 +43,26 @@ func (s *Server) ReadConfig(filePath string) {
         panic(err)
     }
 
+    //TODO: clean up type casting
     for tName, tCols := range data {
-        cols := make(map[string]column)
+        cols := make(TableMetadata)
         for colName, colData := range tCols.(map[string]interface{}) {
-            newCol := column{
+            newCol := ColumnMetadata{
                 Type: (colData.(map[string]interface{}))["type"].(string),
             }
             cols[colName] = newCol
         }
-        s.Tables[tName.(string)] = Table{Cols: cols}
+        s.Tables[tName.(string)] = cols
     }
 }
 
 // TODO: add more metadata
-type column struct {
+type ColumnMetadata struct {
     Type string `json:"type"` 
 }
 
-type Table struct {
-    Cols map[string]column
-}
+type TableMetadata map[string]ColumnMetadata
+
 
 func main() {
     s := NewServer()
