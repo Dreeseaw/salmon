@@ -8,6 +8,7 @@ No other thread should open ports or reqs
 package main
 
 import (
+    "fmt"
     "io/ioutil"
     "net/http"
     "encoding/json"
@@ -56,9 +57,18 @@ func (cm *CommsManager) Init() (map[string]TableMetadata, error) {
 }
 
 // Start the communication manager
-func (cm *CommsManager) Start() {
+func (cm *CommsManager) Start(fin chan blank) {
 
-    // send heartbeats & get replicas? open server & accept stuff?
+    // create grpc client
 
-    return
+    // start replica & partial recievers
+
+    // start main loop to communicate with other threads
+    for {
+        select {
+        case <-fin:
+            fmt.Println("Comm Manager shutdown recieved")
+            return
+        }
+    }
 }

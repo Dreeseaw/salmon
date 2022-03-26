@@ -45,9 +45,9 @@ func (ta *Table) InsertObject(obj map[string]interface{}) error {
     return nil
 }
 
-func (ta *Table) Select(selectors []string, filters []filter) ([]column.Object, error) {
+func (ta *Table) Select(selectors []string, filters []filter) ([]Object, error) {
     
-    result_rows := make([]column.Object, 0)
+    result_rows := make([]Object, 0)
 
     ta.Coll.Query(func(txn *column.Txn) error {
 
@@ -70,7 +70,7 @@ func (ta *Table) Select(selectors []string, filters []filter) ([]column.Object, 
 
         // range and return selected data
         return txn.Range(func (i uint32) {
-            row_obj := make(column.Object)
+            row_obj := make(Object)
             for _, sel := range selectors {
                 value, _ := txn.Any(sel).Get()
                 row_obj[sel] = value
