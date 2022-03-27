@@ -25,13 +25,22 @@ type Table struct {
     Meta TableMetadata
 }
 
+func orderColList(tm TableMetadata) []ColumnMetadata {
+    ret := make([]ColumnMetadata, len(tm))
+    for colName, colMeta := range tm {
+        ret[colMeta.Order] = colMeta
+    }
+    return ret
+} 
+
 func NewTable(tm TableMetadata) *Table {
     coll := column.NewCollection()
 
-    for colName, colMeta := range tm {
+    // create columns in correct order
+    for _, colMeta := range orderColList(tm) {
         colFunc, _ := CollectionTypeMap[colMeta.Type]
-        fmt.Println(colName, colFunc)
-        coll.CreateColumn(colName, colFunc())
+        fmt.Println(colMeta.Name, colFunc)
+        coll.CreateColumn(colMeta.Name, colFunc())
     }
 
     return &Table{

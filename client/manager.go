@@ -7,20 +7,19 @@ import (
 
 type ManagerOptions struct {
     ManChan chan Command
-    CommsChan chan Command
 }
 
 type Manager struct {
-    Tables    map[string]*Table
-    ManChan   chan Command
-    CommsChan chan Command
+    Tables      map[string]*Table
+    ManChan     chan Command
+    ReplicaRecv *ReplicaReceiver
 }
 
 func NewManager(mo ManagerOptions) *Manager {
     return &Manager{
         Tables: make(map[string]*Table),
         ManChan: mo.ManChan,
-        CommsChan: mo.CommsChan,
+        ReplicaRecv: NewReplicaReceiver(),
     }
 }
 
@@ -28,12 +27,28 @@ func NewManager(mo ManagerOptions) *Manager {
 func (m *Manager) Init(tableData map[string]TableMetadata) {
     for tName, tMeta := range tableData {
         table := NewTable(tMeta)
+        m.ReplicaRecv.TableData[tName] = tMeta
         m.Tables[tName] = table
     }
 }
 
 // Start manager
 func (m *Manager) Start(fin chan blank) {
+
+    // create grpc client
+    var opts []grpc.DialOptions
+    conn, err := grpc.Dial(*serverAddr, opts...)
+    if err != nil {
+        panic(err)
+    }
+    defer conn.Close()
+    client := pb.NewRouterServiceClient() //type pb.RouterServiceClient
+
+    // start receivers
+    go m.ReplicaRecv.Start(client)
+    // go m.PartialRecv.Start(client)
+
+    // processing loop
     for {
         select {
         case cmd := <- m.ManChan:
