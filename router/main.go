@@ -2,6 +2,7 @@ package main
 
 import (
 //    "fmt"
+    "flag"
     "io/ioutil"
     "net/http"
     "gopkg.in/yaml.v3"
@@ -10,6 +11,7 @@ import (
     "github.com/labstack/echo/v4/middleware"
 )
 
+type blank struct {}
 type GUID string
 type Partition int
 type PartitionList []Partition
@@ -74,6 +76,20 @@ func main() {
     e.GET("/accept", s.Accept)
 
     e.Logger.Fatal(e.Start(":1323"))
+}
+
+var (
+    port = flag.Int("port", 27604, "the port for the server")
+)
+
+func grpc_main() {
+    flag.Parse()
+    lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *port))
+
+    var opts []grpc.ServerOption
+    grpcServer := grpc.NewServer(opts...)
+    pb.RegisterRoutingServiceServer(grpcServer, newRoutingServer())
+    grpcServer.Serve(lis)
 }
 
 // Accept a new client connection, send back table configs 

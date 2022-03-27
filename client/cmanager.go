@@ -12,6 +12,10 @@ import (
     "io/ioutil"
     "net/http"
     "encoding/json"
+
+    "google.golang.org/grpc"
+    
+    pb "github.com/Dreeseaw/salmon/grpc"
 )
 
 type CommsManagerOptions struct {
@@ -59,9 +63,19 @@ func (cm *CommsManager) Init() (map[string]TableMetadata, error) {
 // Start the communication manager
 func (cm *CommsManager) Start(fin chan blank) {
 
+    // TODO: add serverAddr client flag
+
     // create grpc client
+    var opts []grpc.DialOptions
+    conn, err := grpc.Dial(*serverAddr, opts...)
+    if err != nil {
+        panic(err)
+    }
+    defer conn.Close()
+    client := pb.NewRouterServiveClient() //type pb.RouterServiceClient
 
     // start replica & partial recievers
+
 
     // start main loop to communicate with other threads
     for {
