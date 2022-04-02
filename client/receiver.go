@@ -1,8 +1,9 @@
 package main
 
 import (
+    "io"
     "log"
-    "time"
+//    "time"
     "context"
 
     pb "github.com/Dreeseaw/salmon/grpc"
@@ -11,20 +12,22 @@ import (
 type ReplicaReceiver struct {
     TableData   map[string]TableMetadata
     SuccessChan chan CommandResult
+    ManagerChan chan Command
 }
 
-func NewReplicaReceiver() *ReplicaReceiver {
+func NewReplicaReceiver(mc chan Command) *ReplicaReceiver {
     sc := make(chan CommandResult)
     return &ReplicaReceiver{
         TableData: make(map[string]TableMetadata),
         SuccessChan: sc,
+        ManagerChan: mc,
     }
 }
 
 func (rr *ReplicaReceiver) Start(client pb.RouterServiceClient) {
     
-    ctx, cancel := context.Background()
-    defer cancel()
+    ctx := context.Background()
+    // defer cancel()
 
     // create duplex rpc stream
     stream, err := client.ReceiveReplicas(ctx)
@@ -55,12 +58,12 @@ func (rr *ReplicaReceiver) Start(client pb.RouterServiceClient) {
             // send replica (insert) command
             rr.ManagerChan <- ic
         }
-    }
+    }()
 
     // send success responses back to router
     for {
         select {
-        case resp <- rr.SuccessChan:
+        case resp := <- rr.SuccessChan:
             succ := ResponseToPb(resp)
             if err := stream.Send(succ); err != nil {
                 log.Fatalf("Failed to send a note: %v", err)

@@ -27,7 +27,7 @@ type Table struct {
 
 func orderColList(tm TableMetadata) []ColumnMetadata {
     ret := make([]ColumnMetadata, len(tm))
-    for colName, colMeta := range tm {
+    for _, colMeta := range tm {
         ret[colMeta.Order] = colMeta
     }
     return ret

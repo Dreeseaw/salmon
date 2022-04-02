@@ -33,6 +33,7 @@ func NewSalmon() *Salmon {
     fc  := make(chan blank)
     man  := NewManager(ManagerOptions{
         ManChan: mc,
+        ServerAddr: "localhost:50051",
     })
 
     return &Salmon{
@@ -46,7 +47,7 @@ func NewSalmon() *Salmon {
 func (sal *Salmon) Init() error {
 
     // read in config file
-    tables, err := sal.ReadConfig()
+    tables, err := sal.ReadConfig("tester.yaml")
     if err != nil {
         return err
     }
@@ -56,7 +57,7 @@ func (sal *Salmon) Init() error {
 }
 
 // Read in a table config yaml
-func (sal *Salmon) ReadConfig(filePath string) ([]TableMetadata, error) {
+func (sal *Salmon) ReadConfig(filePath string) (map[string]TableMetadata, error) {
     yfile, err := ioutil.ReadFile(filePath)
     if err != nil {
         return nil, err
@@ -83,7 +84,7 @@ func (sal *Salmon) ReadConfig(filePath string) ([]TableMetadata, error) {
             cols[colName] = newCol
         }
         tables[tName.(string)] = cols
-        fmt.Println("Read in table %v", tName.(string))
+        fmt.Printf("Read in table %v\n", tName.(string))
     }
     return tables, nil
 }

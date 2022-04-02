@@ -2,7 +2,7 @@ package main
 
 import (
     "errors"
-    "strconv"
+//    "strconv"
 
     pb "github.com/Dreeseaw/salmon/grpc"
 )
@@ -12,12 +12,14 @@ type Command interface {}
 type Object map[string]interface{}
 
 type InsertCommand struct {
+    Id         string
     TableName  string
     Obj        Object
     ResultChan chan CommandResult
 }
 
 type SelectCommand struct {
+    Id         string
     TableName  string
     Selectors  []string
     Filters    []filter
@@ -31,10 +33,10 @@ type CommandResult struct {
 }
 
 func InsertCommandFromPb(inp *pb.InsertCommand, tm TableMetadata, rc chan CommandResult) *InsertCommand {
-    obj := ObjectFromPb(inp.Object, tm)
+    obj, _ := ObjectFromPb(inp.GetObj(), tm)
     return &InsertCommand{
         TableName: inp.GetTable(),
-        Object: obj,
+        Obj: obj,
         ResultChan: rc,
     }
 }
@@ -43,7 +45,7 @@ func ObjectFromPb(inp *pb.Object, tm TableMetadata) (Object, error) {
     obj := make(Object)
     colList := orderColList(tm)
 
-    for i, anyField := range inp.GetField {
+    for i, anyField := range inp.GetField() {
         colName := colList[i].Name
         switch val := anyField.Value.(type) {
         case *pb.FieldType_Sval:
@@ -66,8 +68,8 @@ func ObjectFromPb(inp *pb.Object, tm TableMetadata) (Object, error) {
 func ResponseToPb(inp CommandResult) *pb.SuccessResponse {
     if inp.Error == nil && inp.Objects == nil {
         return &pb.SuccessResponse{
-            success: true,
-            id: inp.Id,
+            Success: true,
+            Id: inp.Id,
         }
     }
     return nil

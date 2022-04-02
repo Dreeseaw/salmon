@@ -3,13 +3,20 @@ package main
 import (
     "fmt"
     "errors"
+
+    "google.golang.org/grpc"
+    // "github.com/golang/protobuf/proto"
+
+    pb "github.com/Dreeseaw/salmon/grpc"
 )
 
 type ManagerOptions struct {
-    ManChan chan Command
+    ManChan    chan Command
+    ServerAddr string
 }
 
 type Manager struct {
+    ServerAddr  string
     Tables      map[string]*Table
     ManChan     chan Command
     ReplicaRecv *ReplicaReceiver
@@ -17,9 +24,10 @@ type Manager struct {
 
 func NewManager(mo ManagerOptions) *Manager {
     return &Manager{
+        ServerAddr: mo.ServerAddr,
         Tables: make(map[string]*Table),
         ManChan: mo.ManChan,
-        ReplicaRecv: NewReplicaReceiver(),
+        ReplicaRecv: NewReplicaReceiver(mo.ManChan),
     }
 }
 
@@ -36,13 +44,13 @@ func (m *Manager) Init(tableData map[string]TableMetadata) {
 func (m *Manager) Start(fin chan blank) {
 
     // create grpc client
-    var opts []grpc.DialOptions
-    conn, err := grpc.Dial(*serverAddr, opts...)
+    var opts []grpc.DialOption
+    conn, err := grpc.Dial(m.ServerAddr, opts...)
     if err != nil {
         panic(err)
     }
     defer conn.Close()
-    client := pb.NewRouterServiceClient() //type pb.RouterServiceClient
+    client := pb.NewRouterServiceClient(conn) //type pb.RouterServiceClient
 
     // start receivers
     go m.ReplicaRecv.Start(client)
