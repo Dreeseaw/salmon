@@ -13,10 +13,26 @@ import (
 
 func Test_InsertObject(t *testing.T) {
     tm := TableMetadata{
-        "testcolumnint": ColumnMetadata{Type: "int"},
-        "testcolumnstr": ColumnMetadata{Type: "string"},
-        "testcolumnfloat": ColumnMetadata{Type: "float"},
-        "testcolumnbool": ColumnMetadata{Type: "bool"},
+        "testcolumnint": ColumnMetadata{
+            Type: "int",
+            Name: "testcolumnint",
+            Order: 0,
+        },
+        "testcolumnstr": ColumnMetadata{
+            Type: "string",
+            Name: "testcolumnstr",
+            Order: 1,
+        },
+        "testcolumnfloat": ColumnMetadata{
+            Type: "float",
+            Name: "testcolumnfloat",
+            Order: 2,
+        },
+        "testcolumnbool": ColumnMetadata{
+            Type: "bool",
+            Name: "testcolumnbool",
+            Order: 3,
+        },
     }
     testTable := NewTable(tm)
     
@@ -61,10 +77,26 @@ func Test_InsertObject(t *testing.T) {
 func Test_Filtering(t *testing.T) {
 
     tm := TableMetadata{
-        "testcolumnint": ColumnMetadata{Type: "int"},
-        "testcolumnstr": ColumnMetadata{Type: "string"},
-        "testcolumnfloat": ColumnMetadata{Type: "float"},
-        "testcolumnbool": ColumnMetadata{Type: "bool"},
+        "testcolumnint": ColumnMetadata{
+            Type: "int",
+            Name: "testcolumnint",
+            Order: 0,
+        },
+        "testcolumnstr": ColumnMetadata{
+            Type: "string",
+            Name: "testcolumnstr",
+            Order: 1,
+        },
+        "testcolumnfloat": ColumnMetadata{
+            Type: "float",
+            Name: "testcolumnfloat",
+            Order: 2,
+        },
+        "testcolumnbool": ColumnMetadata{
+            Type: "bool",
+            Name: "testcolumnbool",
+            Order: 3,
+        },
     }
     testTable := NewTable(tm)
 
@@ -112,13 +144,29 @@ func Test_Filtering(t *testing.T) {
     assert.Equal(t, 63, len(result))
 }
 
-func Test_Select(t *testing.T) {
+func Test_Selecting(t *testing.T) {
 
     tm := TableMetadata{
-        "testcolumnint": ColumnMetadata{Type: "int"},
-        "testcolumnstr": ColumnMetadata{Type: "string"},
-        "testcolumnfloat": ColumnMetadata{Type: "float"},
-        "testcolumnbool": ColumnMetadata{Type: "bool"},
+        "testcolumnint": ColumnMetadata{
+            Type: "int",
+            Name: "testcolumnint",
+            Order: 0,
+        },
+        "testcolumnstr": ColumnMetadata{
+            Type: "string",
+            Name: "testcolumnstr",
+            Order: 1,
+        },
+        "testcolumnfloat": ColumnMetadata{
+            Type: "float",
+            Name: "testcolumnfloat",
+            Order: 2,
+        },
+        "testcolumnbool": ColumnMetadata{
+            Type: "bool",
+            Name: "testcolumnbool",
+            Order: 3,
+        },
     }
     testTable := NewTable(tm)
     

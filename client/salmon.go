@@ -7,62 +7,91 @@ go interface to cache
 package main
 
 import (
-    // "fmt"
+    "fmt"
     // "errors"
+    "io/ioutil"
+    "gopkg.in/yaml.v3"
 )
 
 type blank struct {}
 
 type ColumnMetadata struct {
-    Type string `json:"type"`
+    Type  string `json:"type"`
+    Name  string 
+    Order int
 }
 type TableMetadata map[string]ColumnMetadata
 
 type Salmon struct {
     ManagerThread  *Manager
-    CommsThread    *CommsManager
     ManagerChannel chan Command
-    CommsChannel   chan Command
     FinishChannel  chan blank
 }
 
 func NewSalmon() *Salmon {
     mc  := make(chan Command)
-    cmc := make(chan Command)
     fc  := make(chan blank)
     man  := NewManager(ManagerOptions{
         ManChan: mc,
-        CommsChan: cmc,
-    })
-    comm := NewCommsManager(CommsManagerOptions{
-        RouterAddr: "http://localhost:1323",
-        ManChan: mc,
-        CommsChan: cmc,
+        ServerAddr: "localhost:50051",
     })
 
     return &Salmon{
         ManagerThread: man,
-        CommsThread: comm,
         ManagerChannel: mc,
-        CommsChannel: cmc,
         FinishChannel: fc,
     }
 }
 
 // Init the salmon client
 func (sal *Salmon) Init() error {
-    tables, err := sal.CommsThread.Init()
+
+    // read in config file
+    tables, err := sal.ReadConfig("tester.yaml")
     if err != nil {
         return err
     }
+
     sal.ManagerThread.Init(tables)
     return nil
+}
+
+// Read in a table config yaml
+func (sal *Salmon) ReadConfig(filePath string) (map[string]TableMetadata, error) {
+    yfile, err := ioutil.ReadFile(filePath)
+    if err != nil {
+        return nil, err
+    }
+
+    data := make(map[interface{}]interface{})
+
+    err = yaml.Unmarshal(yfile, &data)
+    if err != nil {
+        return nil, err
+    }
+
+    tables := make(map[string]TableMetadata)
+
+    //TODO: clean up type casting
+    for tName, tCols := range data {
+        cols := make(TableMetadata)
+        for colName, colData := range tCols.(map[string]interface{}) {
+            newCol := ColumnMetadata{
+                Type: (colData.(map[string]interface{}))["type"].(string),
+                Name: colName,
+                Order: (colData.(map[string]interface{}))["order"].(int),
+            }
+            cols[colName] = newCol
+        }
+        tables[tName.(string)] = cols
+        fmt.Printf("Read in table %v\n", tName.(string))
+    }
+    return tables, nil
 }
 
 // Start the salmon client
 func (sal *Salmon) Start() error {
 
-    go sal.CommsThread.Start(sal.FinishChannel)
     go sal.ManagerThread.Start(sal.FinishChannel)
 
     return nil

@@ -1,36 +1,21 @@
 package main
 
 import (
-//    "fmt"
+    "fmt"
+    "flag"
     "io/ioutil"
-    "net/http"
     "gopkg.in/yaml.v3"
+    "net"
 
-    "github.com/labstack/echo/v4"
-    "github.com/labstack/echo/v4/middleware"
+
+    "google.golang.org/grpc"
+
+    pb "github.com/Dreeseaw/salmon/grpc"
 )
 
-type GUID string
-type Partition int
-type PartitionList []Partition
+type blank struct {}
 
-type ClientData struct {
-    Partitions map[string]PartitionList
-}
-
-type Server struct {
-    Tables   map[string]TableMetadata
-    Clients  map[GUID]ClientData
-}
-
-func NewServer() *Server {
-    return &Server{
-        Tables: make(map[string]TableMetadata),
-        Clients: make(map[GUID]ClientData),
-    }
-}
-
-func (s *Server) ReadConfig(filePath string) {
+func ReadConfig(filePath string) map[string]TableMetadata {
     yfile, err := ioutil.ReadFile(filePath)
     if err != nil {
         panic(err)
@@ -43,6 +28,8 @@ func (s *Server) ReadConfig(filePath string) {
         panic(err)
     }
 
+    tables := make(map[string]TableMetadata)
+
     //TODO: clean up type casting
     for tName, tCols := range data {
         cols := make(TableMetadata)
@@ -52,8 +39,9 @@ func (s *Server) ReadConfig(filePath string) {
             }
             cols[colName] = newCol
         }
-        s.Tables[tName.(string)] = cols
+        tables[tName.(string)] = cols
     }
+    return tables
 }
 
 // TODO: add more metadata
@@ -63,24 +51,34 @@ type ColumnMetadata struct {
 
 type TableMetadata map[string]ColumnMetadata
 
+var (
+    port = flag.Int("port", 27604, "the port for the server")
+)
 
 func main() {
-    s := NewServer()
-    s.ReadConfig("tester.yaml")
+    flag.Parse()
 
-    e := echo.New()
+    // create server/engine channels
+    insertChan := make(chan *pb.InsertCommand)
+    connChan := make(chan *Client)
 
-    e.Use(middleware.Logger())
-    e.GET("/accept", s.Accept)
+    //start engine
+    engine := NewRoutingEngine(insertChan, connChan)
+    go engine.Start()
 
-    e.Logger.Fatal(e.Start(":1323"))
-}
-
-// Accept a new client connection, send back table configs 
-func (s *Server) Accept(c echo.Context) error {
-    // get info from client
-
-
-    // return table configs
-    return c.JSON(http.StatusOK, s.Tables)
+    //start server
+    //go func(){
+    var opts []grpc.ServerOption
+    lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *port))
+    if err != nil {
+        panic(err)
+    }
+    grpcServer := grpc.NewServer(opts...)
+    pb.RegisterRouterServiceServer(
+        grpcServer, 
+        NewRoutingServer(insertChan, connChan),
+    )
+    fmt.Printf("Serving on localhost:%d\n", *port)
+    grpcServer.Serve(lis)
+    //}()
 }

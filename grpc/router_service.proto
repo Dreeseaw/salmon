@@ -3,8 +3,6 @@
 // 
 syntax = "proto3";
 
-import "google/protobuf/any.proto";
-
 option go_package = "github.com/Dreeseaw/salmon/grpc";
 
 package RouterService;
@@ -27,9 +25,18 @@ service RouterService {
 
 }
 
+message FieldType {
+    oneof value {
+        string sval = 1;
+        double fval = 2;
+        int32  ival = 3;
+        bool   bval = 4;
+    }
+}
+
 // Base object type
 message Object {
-    repeated google.protobuf.Any field = 1;
+    repeated FieldType field = 1;
 }
 
 // true = success, false = failures
@@ -47,7 +54,7 @@ message InsertCommand {
 message Filter {
     string colname = 1;
     string operation = 2;
-    google.protobuf.Any val = 3;
+    FieldType val = 3;
 }
 
 // Sent to router to begin distributed selects, 

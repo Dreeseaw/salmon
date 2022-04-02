@@ -3,24 +3,31 @@ package main
 import (
     "fmt"
     "errors"
+
+    "google.golang.org/grpc"
+    // "github.com/golang/protobuf/proto"
+
+    pb "github.com/Dreeseaw/salmon/grpc"
 )
 
 type ManagerOptions struct {
-    ManChan chan Command
-    CommsChan chan Command
+    ManChan    chan Command
+    ServerAddr string
 }
 
 type Manager struct {
-    Tables    map[string]*Table
-    ManChan   chan Command
-    CommsChan chan Command
+    ServerAddr  string
+    Tables      map[string]*Table
+    ManChan     chan Command
+    ReplicaRecv *ReplicaReceiver
 }
 
 func NewManager(mo ManagerOptions) *Manager {
     return &Manager{
+        ServerAddr: mo.ServerAddr,
         Tables: make(map[string]*Table),
         ManChan: mo.ManChan,
-        CommsChan: mo.CommsChan,
+        ReplicaRecv: NewReplicaReceiver(mo.ManChan),
     }
 }
 
@@ -28,12 +35,28 @@ func NewManager(mo ManagerOptions) *Manager {
 func (m *Manager) Init(tableData map[string]TableMetadata) {
     for tName, tMeta := range tableData {
         table := NewTable(tMeta)
+        m.ReplicaRecv.TableData[tName] = tMeta
         m.Tables[tName] = table
     }
 }
 
 // Start manager
 func (m *Manager) Start(fin chan blank) {
+
+    // create grpc client
+    var opts []grpc.DialOption
+    conn, err := grpc.Dial(m.ServerAddr, opts...)
+    if err != nil {
+        panic(err)
+    }
+    defer conn.Close()
+    client := pb.NewRouterServiceClient(conn) //type pb.RouterServiceClient
+
+    // start receivers
+    go m.ReplicaRecv.Start(client)
+    // go m.PartialRecv.Start(client)
+
+    // processing loop
     for {
         select {
         case cmd := <- m.ManChan:
