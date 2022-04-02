@@ -60,9 +60,10 @@ func main() {
 
     // create server/engine channels
     insertChan := make(chan *pb.InsertCommand)
+    connChan := make(chan *Client)
 
     //start engine
-    engine := NewRoutingEngine(insertChan)
+    engine := NewRoutingEngine(insertChan, connChan)
     go engine.Start()
 
     //start server
@@ -75,7 +76,7 @@ func main() {
     grpcServer := grpc.NewServer(opts...)
     pb.RegisterRouterServiceServer(
         grpcServer, 
-        NewRoutingServer(insertChan),
+        NewRoutingServer(insertChan, connChan),
     )
     fmt.Printf("Serving on localhost:%d\n", *port)
     grpcServer.Serve(lis)

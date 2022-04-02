@@ -16,15 +16,23 @@ import (
 type RoutingServer struct {
     pb.UnimplementedRouterServiceServer
 
-    InsertChan chan *pb.InsertCommand
-    ClientReplicaChan chan *pb.InsertCommand
+    InsertChan  InsertCommChan // send insert commands to router
+    ConnectChan chan *Client // for new clients to be added to engine
 }
 
-func NewRoutingServer(ic chan *pb.InsertCommand) *RoutingServer {
-    s := &RoutingServer{
+func NewRoutingServer(ic InsertCommChan, cc chan *Client) *RoutingServer {
+    return &RoutingServer{
         InsertChan: ic,
+        ConnectChan: cc,
     }
-    return s
+}
+
+// Connect a new client, send over to engine as well
+func (rs *RoutingServer) NewClient() *Client{
+    // generate new id
+    cli := &Client{"test_client", make(InsertCommChan)}
+    rs.ConnectChan <- cli
+    return cli
 }
 
 // Unary rpc
@@ -56,8 +64,9 @@ func (rs *RoutingServer) ReceiveReplicas(stream pb.RouterService_ReceiveReplicas
     
     fin := make(chan blank)
 
-    // create replica channel for requesting client
-    
+    // TODO: breakout a unary connect rpc
+    // create client (replica channel)
+    cli := rs.NewClient()
 
     // start server streaming goroutine
     go func() {
@@ -65,7 +74,7 @@ func (rs *RoutingServer) ReceiveReplicas(stream pb.RouterService_ReceiveReplicas
             select {
             case <-fin:
                 return
-            case ic := <-rs.ClientReplicaChan:
+            case ic := <-cli.ReplChan:
                 if err := stream.Send(ic); err != nil {
                     // TODO: handle error case
                     return
@@ -81,16 +90,17 @@ func (rs *RoutingServer) ReceiveReplicas(stream pb.RouterService_ReceiveReplicas
 
     for {
         // get success reponses in any order
-        _, err := stream.Recv()
+        succResp, err := stream.Recv()
         if err == io.EOF {
             return nil
         }
         if err != nil {
             return err
         }
-        
-        // send to routing engine
-
+        if !succResp.GetSuccess() {
+            panic("replica failed") // TODO: remove panic
+        }
+        // TODO: manage failed replica insert better
     }
 
     return nil
