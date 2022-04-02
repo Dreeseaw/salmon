@@ -4,6 +4,7 @@
 package main
 
 import (
+    "io"
     "context"
     
     // "google.golang.org/grpc"
@@ -15,11 +16,14 @@ import (
 type RoutingServer struct {
     pb.UnimplementedRouterServiceServer
 
-     
+    InsertChan chan *pb.InsertCommand
+    ClientReplicaChan chan *pb.InsertCommand
 }
 
-func NewRoutingServer() *RoutingServer {
-    s := &RoutingServer{}
+func NewRoutingServer(ic chan *pb.InsertCommand) *RoutingServer {
+    s := &RoutingServer{
+        InsertChan: ic,
+    }
     return s
 }
 
@@ -30,10 +34,10 @@ func (rs *RoutingServer) SendInsert(ctx context.Context, ic *pb.InsertCommand) (
 
     // send to query engine
 
-    // block for success or not?
+    // block for success or not? no
 
     // send success back
-    resp := &pb.SuccessResponse{nil, nil}
+    resp := &pb.SuccessResponse{Success: true, Id: "bob"}
     return resp, nil
 }
 
@@ -50,7 +54,7 @@ func (rs *RoutingServer) SendSelect(sc *pb.SelectCommand, stream pb.RouterServic
 // Duplex rpc
 func (rs *RoutingServer) ReceiveReplicas(stream pb.RouterService_ReceiveReplicasServer) error {
     
-    fin := chan blank
+    fin := make(chan blank)
 
     // create replica channel for requesting client
     
@@ -61,7 +65,7 @@ func (rs *RoutingServer) ReceiveReplicas(stream pb.RouterService_ReceiveReplicas
             select {
             case <-fin:
                 return
-            case ic <-ClientReplicaChan:
+            case ic := <-rs.ClientReplicaChan:
                 if err := stream.Send(ic); err != nil {
                     // TODO: handle error case
                     return
@@ -77,7 +81,7 @@ func (rs *RoutingServer) ReceiveReplicas(stream pb.RouterService_ReceiveReplicas
 
     for {
         // get success reponses in any order
-        in, err := stream.Recv()
+        _, err := stream.Recv()
         if err == io.EOF {
             return nil
         }
