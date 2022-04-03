@@ -40,17 +40,29 @@ func (m *Manager) Init(tableData map[string]TableMetadata) {
     }
 }
 
-// Start manager
-func (m *Manager) Start(fin chan blank) {
 
-    // create grpc client
+// create & start router client
+func (m *Manager) NewRouterClient() (func() error, pb.RouterServiceClient) {
+   
+    if m.ServerAddr == "mock" {
+        return func() error {return nil}, NewMockRouterClient() 
+    }
+
     var opts []grpc.DialOption
     conn, err := grpc.Dial(m.ServerAddr, opts...)
     if err != nil {
         panic(err)
     }
-    defer conn.Close()
     client := pb.NewRouterServiceClient(conn) //type pb.RouterServiceClient
+    return conn.Close, client
+}
+
+
+// Start manager
+func (m *Manager) Start(fin chan blank) {
+
+    closeFunc, client := m.NewRouterClient()
+    defer closeFunc()
 
     // start receivers
     go m.ReplicaRecv.Start(client)

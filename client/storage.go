@@ -39,7 +39,6 @@ func NewTable(tm TableMetadata) *Table {
     // create columns in correct order
     for _, colMeta := range orderColList(tm) {
         colFunc, _ := CollectionTypeMap[colMeta.Type]
-        fmt.Println(colMeta.Name, colFunc)
         coll.CreateColumn(colMeta.Name, colFunc())
     }
 
