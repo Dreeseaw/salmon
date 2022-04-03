@@ -13,7 +13,7 @@ import (
 )
 
 const (
-    TMP_CONFIG string = "/tmp/salmon_readconfig_test.yaml"
+    TMP_CONFIG string = "/tmp/salmon.yaml"
 )
 
 type MockRouterClient struct {

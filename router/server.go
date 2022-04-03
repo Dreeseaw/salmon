@@ -5,6 +5,7 @@ package main
 
 import (
     "io"
+    "fmt"
     "context"
     
     // "google.golang.org/grpc"
@@ -41,6 +42,8 @@ func (rs *RoutingServer) SendInsert(ctx context.Context, ic *pb.InsertCommand) (
     // create result chan
 
     // send to query engine
+    fmt.Println("[server] received insert command")
+    rs.InsertChan <- ic
 
     // block for success or not? no
 
@@ -67,6 +70,7 @@ func (rs *RoutingServer) ReceiveReplicas(stream pb.RouterService_ReceiveReplicas
     // TODO: breakout a unary connect rpc
     // create client (replica channel)
     cli := rs.NewClient()
+    fmt.Printf("[server] client connected %v\n", cli.Id)
 
     // start server streaming goroutine
     go func() {
@@ -75,6 +79,7 @@ func (rs *RoutingServer) ReceiveReplicas(stream pb.RouterService_ReceiveReplicas
             case <-fin:
                 return
             case ic := <-cli.ReplChan:
+                fmt.Printf("[server] sending replica to client %v\n", cli.Id)
                 if err := stream.Send(ic); err != nil {
                     // TODO: handle error case
                     return
