@@ -3,8 +3,8 @@ module github.com/Dreeseaw/salmon/examples
 go 1.17
 
 require (
-	github.com/Dreeseaw/salmon/client v0.0.0-20220403205655-feae4eefb994 // indirect
-	github.com/Dreeseaw/salmon/grpc v0.0.0-20220403181723-17d016b85044 // indirect
+	github.com/Dreeseaw/salmon/client v0.0.0-20220403211134-81b0e3ef0d2a // indirect
+	github.com/Dreeseaw/salmon/grpc v0.0.0-20220403205655-feae4eefb994 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/kelindar/bitmap v1.2.1 // indirect
 	github.com/kelindar/column v0.0.0-20220310063741-ee265e7d894c // indirect
@@ -15,7 +15,7 @@ require (
 	github.com/klauspost/cpuid/v2 v2.0.12 // indirect
 	github.com/zeebo/xxh3 v1.0.2 // indirect
 	golang.org/x/net v0.0.0-20220403103023-749bd193bc2b // indirect
-	golang.org/x/sys v0.0.0-20220403020550-483a9cbc67c0 // indirect
+	golang.org/x/sys v0.0.0-20220403205710-6acee93ad0eb // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20220401170504-314d38edb7de // indirect
 	google.golang.org/grpc v1.45.0 // indirect

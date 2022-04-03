@@ -17,6 +17,12 @@ Right now, only three functions are supported for the client - NewSalmon, Insert
 
 ### Developing
 
+#### Starting Router (gRPC server)
+
+~~~
+cd router/ && go run ./...
+~~~
+
 #### Compiling new gRPC protos
 
 ~~~
