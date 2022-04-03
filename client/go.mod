@@ -3,9 +3,9 @@ module github.com/Dreeseaw/salmon/client
 go 1.17
 
 require (
-	github.com/Dreeseaw/salmon/grpc v0.0.0-00010101000000-000000000000
-	github.com/kelindar/column v0.0.0-20220116152415-02b2c664dc26
-	github.com/stretchr/testify v1.7.0
+	github.com/Dreeseaw/salmon/grpc v0.0.0-20220403181723-17d016b85044
+	github.com/kelindar/column v0.0.0-20220310063741-ee265e7d894c
+	github.com/stretchr/testify v1.7.1
 	google.golang.org/grpc v1.45.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
@@ -27,5 +27,3 @@ require (
 	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 )
-
-replace github.com/Dreeseaw/salmon/grpc => ../grpc
