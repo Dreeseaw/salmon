@@ -6,6 +6,9 @@
 package main
 
 import (
+    "os"
+    "fmt"
+
     salmon "github.com/Dreeseaw/salmon/client"
 )
 
@@ -43,7 +46,7 @@ func write_config() {
     }
 }
 
-func Example() {
+func main() {
     
     // create table config
     write_config()
@@ -51,6 +54,7 @@ func Example() {
     sal := salmon.NewSalmon("localhost:27604")
     sal.Init("/tmp/salmon.yaml")
     sal.Start()
-
     
+    fmt.Println("started salmon client")
+
 }
