@@ -26,6 +26,7 @@ type Salmon struct {
     ManagerThread  *Manager
     ManagerChannel chan Command
     FinishChannel  chan blank
+    CloseClient    func() error
 }
 
 func NewSalmon(serverAddr string) *Salmon {
@@ -40,6 +41,7 @@ func NewSalmon(serverAddr string) *Salmon {
         ManagerThread: man,
         ManagerChannel: mc,
         FinishChannel: fc,
+        CloseClient: nil,
     }
 }
 
@@ -52,7 +54,7 @@ func (sal *Salmon) Init(config string) error {
         return err
     }
 
-    sal.ManagerThread.Init(tables)
+    sal.CloseClient = sal.ManagerThread.Init(tables)
     return nil
 }
 
@@ -97,8 +99,9 @@ func (sal *Salmon) Start() error {
     return nil
 }
 
-// Close client (can be deferred)
+// Close salmon client (can be deferred)
 func (sal *Salmon) Close() {
+    sal.CloseClient()
     sal.FinishChannel <- blank{}
 }
 

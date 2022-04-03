@@ -16,10 +16,11 @@ type ManagerOptions struct {
 }
 
 type Manager struct {
-    ServerAddr  string
-    Tables      map[string]*Table
-    ManChan     chan Command
-    ReplicaRecv *ReplicaReceiver
+    ServerAddr   string
+    Tables       map[string]*Table
+    ManChan      chan Command
+    ReplicaRecv  *ReplicaReceiver
+    RouterClient pb.RouterServiceClient
 }
 
 func NewManager(mo ManagerOptions) *Manager {
@@ -28,16 +29,26 @@ func NewManager(mo ManagerOptions) *Manager {
         Tables: make(map[string]*Table),
         ManChan: mo.ManChan,
         ReplicaRecv: NewReplicaReceiver(mo.ManChan),
+        RouterClient: nil,
     }
 }
 
-// Init manager tables
-func (m *Manager) Init(tableData map[string]TableMetadata) {
+// Init manager client & tables
+func (m *Manager) Init(tableData map[string]TableMetadata) func() error {
+
+    // init client
+    cf, rc := m.NewRouterClient()
+    m.RouterClient = rc
+
+    // init tables
     for tName, tMeta := range tableData {
         table := NewTable(tMeta)
+        // TODO: find cleaner way to set up rr tables
         m.ReplicaRecv.TableData[tName] = tMeta
         m.Tables[tName] = table
     }
+
+    return cf
 }
 
 
@@ -61,11 +72,8 @@ func (m *Manager) NewRouterClient() (func() error, pb.RouterServiceClient) {
 // Start manager
 func (m *Manager) Start(fin chan blank) {
 
-    closeFunc, client := m.NewRouterClient()
-    defer closeFunc()
-
     // start receivers
-    go m.ReplicaRecv.Start(client)
+    go m.ReplicaRecv.Start(m.RouterClient)
     // go m.PartialRecv.Start(client)
 
     // processing loop
