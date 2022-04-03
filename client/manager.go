@@ -157,3 +157,50 @@ func (m *Manager) ProcessSelect(command SelectCommand) CommandResult {
 
     return result
 }
+
+/*
+    Mocks
+*/
+
+
+type MockRouterClient struct {
+}
+
+func NewMockRouterClient() *MockRouterClient {
+    return &MockRouterClient{}
+}
+
+func (mrc *MockRouterClient) SendInsert(ctx context.Context, in *pb.InsertCommand, opts ...grpc.CallOption) (*pb.SuccessResponse, error) {
+    mockResp := &pb.SuccessResponse{Success: true, Id: "default"}
+    return mockResp, nil
+}
+
+func (mrc *MockRouterClient) SendSelect(ctx context.Context, in *pb.SelectCommand, opts ...grpc.CallOption) (pb.RouterService_SendSelectClient, error) {
+    return nil, nil
+}
+
+func (mrc *MockRouterClient) ReceiveReplicas(ctx context.Context, opts ...grpc.CallOption) (pb.RouterService_ReceiveReplicasClient, error) {
+    mockStream := NewMockStream()
+    return mockStream, nil
+}
+
+func (mrc *MockRouterClient) ProcessPartials(ctx context.Context, opts ...grpc.CallOption) (pb.RouterService_ProcessPartialsClient, error) {
+    return nil, nil
+}
+
+type MockStream struct {
+    grpc.ClientStream
+}
+
+func NewMockStream() *MockStream {
+    return &MockStream{}
+}
+
+func (ms *MockStream) Send(*pb.SuccessResponse) error {
+    return nil
+}
+
+func (ms *MockStream) Recv() (*pb.InsertCommand, error) {
+    return nil, nil
+}
+
