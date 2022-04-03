@@ -2,7 +2,9 @@ package main
 
 import (
     "fmt"
+    "time"
     "errors"
+    "context"
 
     "google.golang.org/grpc"
     // "github.com/golang/protobuf/proto"
@@ -16,10 +18,11 @@ type ManagerOptions struct {
 }
 
 type Manager struct {
-    ServerAddr  string
-    Tables      map[string]*Table
-    ManChan     chan Command
-    ReplicaRecv *ReplicaReceiver
+    ServerAddr   string
+    Tables       map[string]*Table
+    ManChan      chan Command
+    ReplicaRecv  *ReplicaReceiver
+    RouterClient pb.RouterServiceClient
 }
 
 func NewManager(mo ManagerOptions) *Manager {
@@ -28,16 +31,26 @@ func NewManager(mo ManagerOptions) *Manager {
         Tables: make(map[string]*Table),
         ManChan: mo.ManChan,
         ReplicaRecv: NewReplicaReceiver(mo.ManChan),
+        RouterClient: nil,
     }
 }
 
-// Init manager tables
-func (m *Manager) Init(tableData map[string]TableMetadata) {
+// Init manager client & tables
+func (m *Manager) Init(tableData map[string]TableMetadata) func() error {
+
+    // init client
+    cf, rc := m.NewRouterClient()
+    m.RouterClient = rc
+
+    // init tables
     for tName, tMeta := range tableData {
         table := NewTable(tMeta)
+        // TODO: find cleaner way to set up rr tables
         m.ReplicaRecv.TableData[tName] = tMeta
         m.Tables[tName] = table
     }
+
+    return cf
 }
 
 
@@ -61,11 +74,8 @@ func (m *Manager) NewRouterClient() (func() error, pb.RouterServiceClient) {
 // Start manager
 func (m *Manager) Start(fin chan blank) {
 
-    closeFunc, client := m.NewRouterClient()
-    defer closeFunc()
-
     // start receivers
-    go m.ReplicaRecv.Start(client)
+    go m.ReplicaRecv.Start(m.RouterClient)
     // go m.PartialRecv.Start(client)
 
     // processing loop
@@ -92,13 +102,34 @@ func (m *Manager) Process(cmd Command) {
 
 // Process an Insert command
 func (m *Manager) ProcessInsert(command InsertCommand) CommandResult {
-    var result CommandResult
-    result.Objects = nil
+    result := CommandResult{"default", nil, nil}
 
-    if table, has := m.Tables[command.TableName]; has {
+    // attempt to store locally first (natural object validation)
+    table, exists := m.Tables[command.TableName]
+    if exists {
         result.Error = table.InsertObject(command.Obj)
     } else {
-        result.Error = errors.New(fmt.Sprintf("got insert command for unknown table %v", command.TableName))
+        result.Error = errors.New(
+            fmt.Sprintf("got insert command for unknown table %v", command.TableName),
+        )
+    }
+
+    if result.Error != nil {
+        return result
+    }
+
+    // send to router to be replicated
+    ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+    defer cancel()
+    resp, err := m.RouterClient.SendInsert(ctx, InsertCommandToPb(command, table.Meta))
+    if err != nil {
+        result.Error = err
+    }
+
+    if !resp.GetSuccess() {
+        result.Error = errors.New(
+            fmt.Sprintf("Router returned failure for insert id %v, obj stored locally", resp.GetId()),
+        )
     }
 
     return result
@@ -119,7 +150,9 @@ func (m *Manager) ProcessSelect(command SelectCommand) CommandResult {
         }
     } else {
         result.Objects = nil
-        result.Error = errors.New(fmt.Sprintf("got insert command for unknown table %v", command.TableName))
+        result.Error = errors.New(
+            fmt.Sprintf("got select command for unknown table %v", command.TableName),
+        )
     }
 
     return result
