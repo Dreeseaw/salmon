@@ -24,7 +24,8 @@ func NewMockRouterClient() *MockRouterClient {
 }
 
 func (mrc *MockRouterClient) SendInsert(ctx context.Context, in *pb.InsertCommand, opts ...grpc.CallOption) (*pb.SuccessResponse, error) {
-    return nil, nil
+    mockResp := &pb.SuccessResponse{Success: true, Id: "default"}
+    return mockResp, nil
 }
 
 func (mrc *MockRouterClient) SendSelect(ctx context.Context, in *pb.SelectCommand, opts ...grpc.CallOption) (pb.RouterService_SendSelectClient, error) {

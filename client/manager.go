@@ -2,7 +2,9 @@ package main
 
 import (
     "fmt"
+    "time"
     "errors"
+    "context"
 
     "google.golang.org/grpc"
     // "github.com/golang/protobuf/proto"
@@ -100,13 +102,34 @@ func (m *Manager) Process(cmd Command) {
 
 // Process an Insert command
 func (m *Manager) ProcessInsert(command InsertCommand) CommandResult {
-    var result CommandResult
-    result.Objects = nil
+    result := CommandResult{"default", nil, nil}
 
-    if table, has := m.Tables[command.TableName]; has {
+    // attempt to store locally first (natural object validation)
+    table, exists := m.Tables[command.TableName]
+    if exists {
         result.Error = table.InsertObject(command.Obj)
     } else {
-        result.Error = errors.New(fmt.Sprintf("got insert command for unknown table %v", command.TableName))
+        result.Error = errors.New(
+            fmt.Sprintf("got insert command for unknown table %v", command.TableName),
+        )
+    }
+
+    if result.Error != nil {
+        return result
+    }
+
+    // send to router to be replicated
+    ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+    defer cancel()
+    resp, err := m.RouterClient.SendInsert(ctx, InsertCommandToPb(command, table.Meta))
+    if err != nil {
+        result.Error = err
+    }
+
+    if !resp.GetSuccess() {
+        result.Error = errors.New(
+            fmt.Sprintf("Router returned failure for insert id %v, obj stored locally", resp.GetId()),
+        )
     }
 
     return result
@@ -127,7 +150,9 @@ func (m *Manager) ProcessSelect(command SelectCommand) CommandResult {
         }
     } else {
         result.Objects = nil
-        result.Error = errors.New(fmt.Sprintf("got insert command for unknown table %v", command.TableName))
+        result.Error = errors.New(
+            fmt.Sprintf("got select command for unknown table %v", command.TableName),
+        )
     }
 
     return result

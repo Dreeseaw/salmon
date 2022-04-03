@@ -41,6 +41,37 @@ func InsertCommandFromPb(inp *pb.InsertCommand, tm TableMetadata, rc chan Comman
     }
 }
 
+func InsertCommandToPb(inp InsertCommand, tm TableMetadata) *pb.InsertCommand {
+
+    fields := make([]*pb.FieldType, len(tm))
+
+    for colName, colMeta := range tm {
+        val, _ := inp.Obj[colName]
+        field := new(pb.FieldType)
+        
+        switch colMeta.Type {
+        case "string":
+            field.Value = &pb.FieldType_Sval{Sval: val.(string)}
+        case "int":
+            field.Value = &pb.FieldType_Ival{Ival: val.(int32)}
+        case "bool":
+            field.Value = &pb.FieldType_Bval{Bval: val.(bool)}
+        case "float":
+            field.Value = &pb.FieldType_Fval{Fval: val.(float64)}
+        default:
+            panic("honestly how?")
+        }
+
+        fields[colMeta.Order] = field
+    }
+
+    return &pb.InsertCommand{
+        Iid: "test",
+        Table: inp.TableName,
+        Obj: &pb.Object{Field: fields},
+    }
+}
+
 func ObjectFromPb(inp *pb.Object, tm TableMetadata) (Object, error) {
     obj := make(Object)
     colList := orderColList(tm)
