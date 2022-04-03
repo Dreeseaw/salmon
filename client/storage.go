@@ -2,7 +2,7 @@
    Uses kelindar/column for single-node, in-mem
    storage & operations
 */
-package main
+package salmon
 
 import (
 //	"errors"

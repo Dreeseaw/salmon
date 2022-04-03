@@ -1,7 +1,7 @@
 /*
     Storage tests
 */
-package main
+package salmon
 
 import (
     "fmt"

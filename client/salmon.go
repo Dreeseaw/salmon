@@ -4,7 +4,7 @@ salmon.go
 go interface to cache
 */
 
-package main
+package salmon
 
 import (
     "fmt"
