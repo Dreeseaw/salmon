@@ -2,23 +2,74 @@ package main
 
 import (
     "os"
+    "context"
     "testing"
 
+	"github.com/kelindar/column"
     "github.com/stretchr/testify/assert"
+    "google.golang.org/grpc"
+
+    pb "github.com/Dreeseaw/salmon/grpc"
 )
 
+const (
+    TMP_CONFIG string = "/tmp/salmon_readconfig_test.yaml"
+)
 
-func Test_ReadConfig(t *testing.T) {
+type MockRouterClient struct {
+}
 
-    // create new yaml file to read in
-    test_sal := NewSalmon()
+func NewMockRouterClient() *MockRouterClient {
+    return &MockRouterClient{}
+}
+
+func (mrc *MockRouterClient) SendInsert(ctx context.Context, in *pb.InsertCommand, opts ...grpc.CallOption) (*pb.SuccessResponse, error) {
+    return nil, nil
+}
+
+func (mrc *MockRouterClient) SendSelect(ctx context.Context, in *pb.SelectCommand, opts ...grpc.CallOption) (pb.RouterService_SendSelectClient, error) {
+    return nil, nil
+}
+
+func (mrc *MockRouterClient) ReceiveReplicas(ctx context.Context, opts ...grpc.CallOption) (pb.RouterService_ReceiveReplicasClient, error) {
+    mockStream := NewMockStream()
+    return mockStream, nil
+}
+
+func (mrc *MockRouterClient) ProcessPartials(ctx context.Context, opts ...grpc.CallOption) (pb.RouterService_ProcessPartialsClient, error) {
+    return nil, nil
+}
+
+type MockStream struct {
+    grpc.ClientStream
+}
+
+func NewMockStream() *MockStream {
+    return &MockStream{}
+}
+
+func (ms *MockStream) Send(*pb.SuccessResponse) error {
+    return nil
+}
+
+func (ms *MockStream) Recv() (*pb.InsertCommand, error) {
+    return nil, nil
+}
+
+
+func write_test_config() {
+
+    if _, err := os.Stat(TMP_CONFIG); err == nil {
+        os.Remove(TMP_CONFIG)
+    }
+
     yaml_txt := []byte(`testtable:
   testcolumnint:
     type: int
     name: testcolumnint
     order: 0
   testcolumnstr:
-    type: str
+    type: string
     name: testcolumnstr
     order: 1
   testcolumnbool:
@@ -30,21 +81,69 @@ func Test_ReadConfig(t *testing.T) {
     name: testcolumnfloat
     order: 3`)
     
-    err := os.WriteFile("/tmp/salmon_readconfig_test.yaml", yaml_txt, 0644)
+    err := os.WriteFile(TMP_CONFIG, yaml_txt, 0644)
     if err != nil {
         panic(err)
     }
+}
 
-    tm, err := test_sal.ReadConfig("/tmp/salmon_readconfig_test.yaml")
+func Test_ReadConfig(t *testing.T) {
 
+    // create new yaml file to read in
+    test_sal := NewSalmon("mock")
+    write_test_config()
+
+    tm, err := test_sal.ReadConfig(TMP_CONFIG)
+
+    assert.Nil(t, err)
     assert.Equal(t, len(tm), 1)
     assert.Equal(t, len(tm["testtable"]), 4)
 }
 
-func Test_Insert(t *testing.T) {
-    assert.Equal(t, 1, 1)
+func Test_Insert_NoRouter(t *testing.T) {
+
+    testSal := NewSalmon("mock")
+    write_test_config()
+    testSal.Init(TMP_CONFIG)
+
+    testSal.Start()
+
+    testObj := map[string]interface{}{
+        "testcolumnint": (int32)(16),
+        "testcolumnstr": "tester",
+        "testcolumnfloat": (float64)(73.8),
+        "testcolumnbool": false,
+    }
+
+    err := testSal.Insert("testtable", testObj)
+    assert.Nil(t, err)
+
+    testTable, exists := testSal.ManagerThread.Tables["testtable"]
+    assert.Equal(t, exists, true)
+
+    var str_res string
+    var int_res int32
+    var flo_res float64
+    var bool_res bool
+    testTable.Coll.Query(func (txn *column.Txn) error {
+        s_rd := txn.String("testcolumnstr")
+        i_rd := txn.Int32("testcolumnint")
+        f_rd := txn.Float64("testcolumnfloat")
+        b_rd := txn.Bool("testcolumnbool")
+    
+        return txn.Range(func (i uint32) {
+            str_res, _ = s_rd.Get()
+            int_res, _ = i_rd.Get()
+            flo_res, _ = f_rd.Get()
+            bool_res = b_rd.Get()
+        })
+    })
+    assert.Equal(t, str_res, "tester")
+    assert.Equal(t, int_res, (int32)(16))
+    assert.Equal(t, flo_res, (float64)(73.8))
+    assert.Equal(t, bool_res, false)
 }
 
-func Test_Select(t *testing.T) {
+func Test_Select_NoRouter(t *testing.T) {
     assert.Equal(t, 1, 1)
 }

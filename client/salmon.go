@@ -28,12 +28,12 @@ type Salmon struct {
     FinishChannel  chan blank
 }
 
-func NewSalmon() *Salmon {
+func NewSalmon(serverAddr string) *Salmon {
     mc  := make(chan Command)
     fc  := make(chan blank)
     man  := NewManager(ManagerOptions{
         ManChan: mc,
-        ServerAddr: "localhost:50051",
+        ServerAddr: serverAddr,
     })
 
     return &Salmon{
@@ -44,10 +44,10 @@ func NewSalmon() *Salmon {
 }
 
 // Init the salmon client
-func (sal *Salmon) Init() error {
+func (sal *Salmon) Init(config string) error {
 
     // read in config file
-    tables, err := sal.ReadConfig("tester.yaml")
+    tables, err := sal.ReadConfig(config)
     if err != nil {
         return err
     }
@@ -119,7 +119,7 @@ func (sal *Salmon) Insert(table string, object Object) error {
     sal.ManagerChannel <- cmd
 
     // wait for result
-    results, _ := <- rc
+    results, _ := <-rc
 
     return results.Error
 }
