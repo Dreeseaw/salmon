@@ -7,7 +7,7 @@ import (
     "context"
 
     "google.golang.org/grpc"
-    "google.golang.org/grpc/credentials"
+    // "google.golang.org/grpc/credentials"
     "google.golang.org/grpc/credentials/insecure"
     // "github.com/golang/protobuf/proto"
 
@@ -64,7 +64,7 @@ func (m *Manager) NewRouterClient() (func() error, pb.RouterServiceClient) {
     }
 
     var opts []grpc.DialOption
-    opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials))
+    opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
     conn, err := grpc.Dial(m.ServerAddr, opts...)
     if err != nil {
         panic(err)
