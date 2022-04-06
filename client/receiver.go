@@ -9,15 +9,19 @@ import (
     pb "github.com/Dreeseaw/salmon/grpc"
 )
 
+type idContextKey string
+
 type ReplicaReceiver struct {
+    ClientId    string
     TableData   map[string]TableMetadata
     SuccessChan chan CommandResult
     ManagerChan chan Command
 }
 
-func NewReplicaReceiver(mc chan Command) *ReplicaReceiver {
+func NewReplicaReceiver(id string, mc chan Command) *ReplicaReceiver {
     sc := make(chan CommandResult)
     return &ReplicaReceiver{
+        ClientId: id,
         TableData: make(map[string]TableMetadata),
         SuccessChan: sc,
         ManagerChan: mc,
@@ -26,7 +30,8 @@ func NewReplicaReceiver(mc chan Command) *ReplicaReceiver {
 
 func (rr *ReplicaReceiver) Start(client pb.RouterServiceClient) {
     
-    ctx := context.Background()
+    idk := idContextKey("id")
+    ctx := context.WithValue(context.Background(), idk, rr.ClientId)
     // defer cancel()
 
     // create duplex rpc stream
