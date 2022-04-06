@@ -9,6 +9,13 @@ package RouterService;
 
 service RouterService {
 
+  // Connect to router
+  rpc Connect(ClientID) returns (SuccessResponse) {}
+
+  // Unconnect from router
+  // Client must send own id for success
+  rpc Disconnect(ClientID) returns (SuccessResponse) {}
+
   // Insert a new object into system
   rpc SendInsert(InsertCommand) returns (SuccessResponse) {}
 
@@ -23,6 +30,10 @@ service RouterService {
   // for processing, read in PartialResults
   rpc ProcessPartials(stream PartialResult) returns (stream SelectCommand) {}
 
+}
+
+message ClientID {
+    string id = 1;
 }
 
 message FieldType {

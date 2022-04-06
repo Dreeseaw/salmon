@@ -18,6 +18,11 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RouterServiceClient interface {
+	// Connect to router
+	Connect(ctx context.Context, in *ClientID, opts ...grpc.CallOption) (*SuccessResponse, error)
+	// Unconnect from router
+	// Client must send own id for success
+	Disconnect(ctx context.Context, in *ClientID, opts ...grpc.CallOption) (*SuccessResponse, error)
 	// Insert a new object into system
 	SendInsert(ctx context.Context, in *InsertCommand, opts ...grpc.CallOption) (*SuccessResponse, error)
 	// General query rpc
@@ -36,6 +41,24 @@ type routerServiceClient struct {
 
 func NewRouterServiceClient(cc grpc.ClientConnInterface) RouterServiceClient {
 	return &routerServiceClient{cc}
+}
+
+func (c *routerServiceClient) Connect(ctx context.Context, in *ClientID, opts ...grpc.CallOption) (*SuccessResponse, error) {
+	out := new(SuccessResponse)
+	err := c.cc.Invoke(ctx, "/RouterService.RouterService/Connect", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *routerServiceClient) Disconnect(ctx context.Context, in *ClientID, opts ...grpc.CallOption) (*SuccessResponse, error) {
+	out := new(SuccessResponse)
+	err := c.cc.Invoke(ctx, "/RouterService.RouterService/Disconnect", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *routerServiceClient) SendInsert(ctx context.Context, in *InsertCommand, opts ...grpc.CallOption) (*SuccessResponse, error) {
@@ -145,6 +168,11 @@ func (x *routerServiceProcessPartialsClient) Recv() (*SelectCommand, error) {
 // All implementations must embed UnimplementedRouterServiceServer
 // for forward compatibility
 type RouterServiceServer interface {
+	// Connect to router
+	Connect(context.Context, *ClientID) (*SuccessResponse, error)
+	// Unconnect from router
+	// Client must send own id for success
+	Disconnect(context.Context, *ClientID) (*SuccessResponse, error)
 	// Insert a new object into system
 	SendInsert(context.Context, *InsertCommand) (*SuccessResponse, error)
 	// General query rpc
@@ -162,6 +190,12 @@ type RouterServiceServer interface {
 type UnimplementedRouterServiceServer struct {
 }
 
+func (UnimplementedRouterServiceServer) Connect(context.Context, *ClientID) (*SuccessResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Connect not implemented")
+}
+func (UnimplementedRouterServiceServer) Disconnect(context.Context, *ClientID) (*SuccessResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Disconnect not implemented")
+}
 func (UnimplementedRouterServiceServer) SendInsert(context.Context, *InsertCommand) (*SuccessResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendInsert not implemented")
 }
@@ -185,6 +219,42 @@ type UnsafeRouterServiceServer interface {
 
 func RegisterRouterServiceServer(s grpc.ServiceRegistrar, srv RouterServiceServer) {
 	s.RegisterService(&RouterService_ServiceDesc, srv)
+}
+
+func _RouterService_Connect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ClientID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RouterServiceServer).Connect(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/RouterService.RouterService/Connect",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RouterServiceServer).Connect(ctx, req.(*ClientID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RouterService_Disconnect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ClientID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RouterServiceServer).Disconnect(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/RouterService.RouterService/Disconnect",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RouterServiceServer).Disconnect(ctx, req.(*ClientID))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _RouterService_SendInsert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -285,6 +355,14 @@ var RouterService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "RouterService.RouterService",
 	HandlerType: (*RouterServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Connect",
+			Handler:    _RouterService_Connect_Handler,
+		},
+		{
+			MethodName: "Disconnect",
+			Handler:    _RouterService_Disconnect_Handler,
+		},
 		{
 			MethodName: "SendInsert",
 			Handler:    _RouterService_SendInsert_Handler,
