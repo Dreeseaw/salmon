@@ -4,8 +4,10 @@ import (
     "fmt"
     "time"
     "errors"
+    "strings"
     "context"
 
+    "github.com/google/uuid"
     "google.golang.org/grpc"
     // "google.golang.org/grpc/credentials"
     "google.golang.org/grpc/credentials/insecure"
@@ -20,6 +22,7 @@ type ManagerOptions struct {
 }
 
 type Manager struct {
+    ClientId     string
     ServerAddr   string
     Tables       map[string]*Table
     ManChan      chan Command
@@ -28,11 +31,14 @@ type Manager struct {
 }
 
 func NewManager(mo ManagerOptions) *Manager {
+    id := uuid.New()
+    cid := strings.Replace(id.String(), "-", "", -1)
     return &Manager{
+        ClientId: cid,
         ServerAddr: mo.ServerAddr,
         Tables: make(map[string]*Table),
         ManChan: mo.ManChan,
-        ReplicaRecv: NewReplicaReceiver(mo.ManChan),
+        ReplicaRecv: NewReplicaReceiver(cid, mo.ManChan),
         RouterClient: nil,
     }
 }
@@ -172,6 +178,14 @@ type MockRouterClient struct {
 func NewMockRouterClient() *MockRouterClient {
     return &MockRouterClient{}
 }
+
+func (mrc *MockRouterClient) Connect(ctx context.Context, in *pb.ClientID, opts ...grpc.CallOption) (*pb.SuccessResponse, error) {
+    return nil, nil
+} 
+
+func (mrc *MockRouterClient) Disconnect(ctx context.Context, in *pb.ClientID, opts ...grpc.CallOption) (*pb.SuccessResponse, error) {
+    return nil, nil
+} 
 
 func (mrc *MockRouterClient) SendInsert(ctx context.Context, in *pb.InsertCommand, opts ...grpc.CallOption) (*pb.SuccessResponse, error) {
     mockResp := &pb.SuccessResponse{Success: true, Id: "default"}

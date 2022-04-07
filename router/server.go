@@ -7,34 +7,52 @@ import (
     "io"
     "fmt"
     "context"
-    
-    // "google.golang.org/grpc"
-    // "github.com/golang/protobuf/proto"
 
     pb "github.com/Dreeseaw/salmon/grpc"
 )
+
+type idContextKey string
 
 type RoutingServer struct {
     pb.UnimplementedRouterServiceServer
 
     InsertChan  InsertCommChan // send insert commands to router
     ConnectChan chan *Client // for new clients to be added to engine
+    ClientMap   map[string]*Client // mirror of engine TODO: extrapolate
 }
 
 func NewRoutingServer(ic InsertCommChan, cc chan *Client) *RoutingServer {
     return &RoutingServer{
         InsertChan: ic,
         ConnectChan: cc,
+        ClientMap: make(map[string]*Client),
     }
 }
 
 // Connect a new client, send over to engine as well
-func (rs *RoutingServer) NewClient() *Client{
-    // generate new id
-    cli := &Client{"test_client", make(InsertCommChan)}
-    rs.ConnectChan <- cli
-    return cli
+func (rs *RoutingServer) GetClient(id string) *Client {
+    if cli, has := rs.ClientMap[id]; has { // TODO: protect map with mutex
+        return cli
+    }
+    return nil 
 }
+
+// Unary rpc
+func (rs *RoutingServer) Connect(ctx context.Context, ci *pb.ClientID) (*pb.SuccessResponse, error) {
+    cid := ci.GetId()
+    cli := &Client{cid, make(InsertCommChan)}
+    rs.ConnectChan <- cli
+    rs.ClientMap[cid] = cli
+    fmt.Printf("[server] client connected %v\n", cid)
+    return &pb.SuccessResponse{Success: true, Id: "connected"}, nil
+}
+
+// Unary rpc
+func (rs *RoutingServer) Disconnect(ctx context.Context, ci *pb.ClientID) (*pb.SuccessResponse, error) {
+    // TODO: disconnect from engine, disburse replicas
+    return &pb.SuccessResponse{Success: true, Id: "disconnected"}, nil
+}
+
 
 // Unary rpc
 func (rs *RoutingServer) SendInsert(ctx context.Context, ic *pb.InsertCommand) (*pb.SuccessResponse, error) {
@@ -66,11 +84,8 @@ func (rs *RoutingServer) SendSelect(sc *pb.SelectCommand, stream pb.RouterServic
 func (rs *RoutingServer) ReceiveReplicas(stream pb.RouterService_ReceiveReplicasServer) error {
     
     fin := make(chan blank)
-
-    // TODO: breakout a unary connect rpc
-    // create client (replica channel)
-    cli := rs.NewClient()
-    fmt.Printf("[server] client connected %v\n", cli.Id)
+    cliId := stream.Context().Value(idContextKey("id"))
+    cli := rs.GetClient(cliId.(string))
 
     // start server streaming goroutine
     go func() {

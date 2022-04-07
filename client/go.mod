@@ -13,6 +13,7 @@ require (
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/kelindar/bitmap v1.1.5 // indirect
 	github.com/kelindar/intmap v1.1.0 // indirect
 	github.com/kelindar/iostream v1.3.0 // indirect
@@ -27,3 +28,5 @@ require (
 	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 )
+
+replace github.com/Dreeseaw/salmon/grpc => ../grpc
