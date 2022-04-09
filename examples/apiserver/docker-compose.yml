@@ -1,0 +1,17 @@
+---
+version: '2'
+services:
+
+  router:
+    build: ../../router
+    hostname: router
+
+  apiserver:
+    depends_on:
+      - router
+    build: .
+    hostname: apiserver
+    restart: always
+    scale: 2
+    ports:
+      - '8090':'8090'

@@ -1,0 +1,17 @@
+maintable:
+  intcol:
+    type: int
+    name: intcol
+    order: 0
+  strcol:
+    type: string
+    name: strcol
+    order: 1
+  boolcol:
+    type: bool
+    name: boolcol
+    order: 2
+  floatcol:
+    type: float
+    name: floatcol
+    order: 3
