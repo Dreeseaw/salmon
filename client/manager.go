@@ -47,8 +47,13 @@ func NewManager(mo ManagerOptions) *Manager {
 func (m *Manager) Init(tableData map[string]TableMetadata) func() error {
 
     // init client
-    cf, rc := m.NewRouterClient()
-    m.RouterClient = rc
+    closeFunc, routerCli := m.NewRouterClient()
+    ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+    defer cancel()
+    if _, err := routerCli.Connect(ctx, &pb.ClientID{Id: m.ClientId}); err != nil {
+        panic(err)
+    }
+    m.RouterClient = routerCli
 
     // init tables
     for tName, tMeta := range tableData {
@@ -58,7 +63,7 @@ func (m *Manager) Init(tableData map[string]TableMetadata) func() error {
         m.Tables[tName] = table
     }
 
-    return cf
+    return closeFunc
 }
 
 
