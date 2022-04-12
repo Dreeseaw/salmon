@@ -69,7 +69,7 @@ func main() {
     //start server
     //go func(){
     var opts []grpc.ServerOption
-    lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *port))
+    lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
     if err != nil {
         panic(err)
     }
