@@ -39,6 +39,7 @@ func (rs *RoutingServer) GetClient(id string) *Client {
 
 // Unary rpc
 func (rs *RoutingServer) Connect(ctx context.Context, ci *pb.ClientID) (*pb.SuccessResponse, error) {
+    // TODO: clean up
     cid := ci.GetId()
     cli := &Client{cid, make(InsertCommChan)}
     rs.ConnectChan <- cli

@@ -1,11 +1,10 @@
----
-version: '2'
+version: "3.9"
 services:
-
   router:
     build: ../../router
     hostname: router
-
+    ports:
+      - "27604:27604"
   apiserver:
     depends_on:
       - router
@@ -13,5 +12,3 @@ services:
     hostname: apiserver
     restart: always
     scale: 2
-    ports:
-      - '8090':'8090'
