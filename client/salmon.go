@@ -128,7 +128,7 @@ func (sal *Salmon) Insert(table string, object Object) error {
 }
 
 // Select queries a table in a SQL-ish fashion
-func (sal *Salmon) Select(table string, selectors []string, filters []filter) ([]Object, error) {
+func (sal *Salmon) Select(table string, selectors []Selector, filters []filter) ([]Object, error) {
    
     // result channel
     rc := make(chan CommandResult)

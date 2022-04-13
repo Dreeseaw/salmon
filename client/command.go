@@ -21,7 +21,7 @@ type InsertCommand struct {
 type SelectCommand struct {
     Id         string
     TableName  string
-    Selectors  []string
+    Selectors  []Selector
     Filters    []filter
     ResultChan chan CommandResult
 }

@@ -5,8 +5,8 @@
 package salmon
 
 import (
-//	"errors"
-    "fmt"
+	"errors"
+//    "fmt"
 
 	"github.com/kelindar/column"
 )
@@ -18,6 +18,21 @@ var CollectionTypeMap = map[string]ColFunc{
 	"float":  column.ForFloat64,
 	"int":    column.ForInt32,
 	"bool":   column.ForBool,
+}
+
+type AggFunc func(a, b interface{}) interface{}
+
+var AggFuncs = map[string]AggFunc{
+    "sum": func(a, b interface{}) interface{} {
+        switch v := a.(type) {
+        case int32:
+            return v + b.(int32)
+        case float64:
+            return v + b.(float64)
+        default:
+            panic(a) //TODO
+        }
+    },
 }
 
 type Table struct {
@@ -53,9 +68,24 @@ func (ta *Table) InsertObject(obj map[string]interface{}) error {
     return nil
 }
 
-func (ta *Table) Select(selectors []string, filters []filter) ([]Object, error) {
+func (ta *Table) Select(selectors []Selector, filters []filter) ([]Object, error) {
     
     result_rows := make([]Object, 0)
+
+    isAggregated := false
+    for _, sel := range selectors {
+        if sel.Aggregator != "" {
+            isAggregated = true
+        }
+    }
+
+    if isAggregated {
+        for _, sel := range selectors {
+            if sel.Aggregator == "" {
+                return nil, errors.New("Mix of aggregated & non-aggregated columns")
+            }
+        }
+    }
 
     ta.Coll.Query(func(txn *column.Txn) error {
 
@@ -70,23 +100,46 @@ func (ta *Table) Select(selectors []string, filters []filter) ([]Object, error) 
                 }
             } else {
                 txn = txn.WithValue(f.ColName(), func(v interface{}) bool {
-                    fmt.Println(v)
                     return f.Process(v)
                 })
             }
         }
 
-        // range and return selected data
+        if isAggregated {
+            aggrObj := make(Object)
+            return txn.Range(func (i uint32) {
+                for _, sel := range selectors {
+                    value, _ := txn.Any(sel.ColName).Get()
+                    aggFunc, _ := AggFuncs[sel.Aggregator]
+                    ta.AggrCollector(aggrObj, sel, value, aggFunc)
+                }
+                result_rows = append(result_rows, aggrObj)
+            })
+            return nil
+        }
+
+        // range and return selected cols
         return txn.Range(func (i uint32) {
             row_obj := make(Object)
             for _, sel := range selectors {
-                value, _ := txn.Any(sel).Get()
-                row_obj[sel] = value
+                value, _ := txn.Any(sel.ColName).Get()
+                row_obj[sel.ColName] = value
             }
             result_rows = append(result_rows, row_obj)
         })
         return nil
     })
 
+    if isAggregated {
+        return result_rows[len(result_rows)-1:], nil
+    }
     return result_rows, nil
+}
+
+func (ta *Table) AggrCollector(obj Object, sel Selector, val interface{}, af AggFunc) {
+    if prev, exists := obj[sel.ColName]; exists {
+        obj[sel.ColName] = af(prev, val)
+    } else {
+        obj[sel.ColName] = val
+    }
 }

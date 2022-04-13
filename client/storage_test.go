@@ -4,7 +4,7 @@
 package salmon
 
 import (
-    "fmt"
+//    "fmt"
     "testing"
 
     "github.com/kelindar/column"
@@ -135,12 +135,22 @@ func Test_Filtering(t *testing.T) {
         },
     }
 
+    sels := []Selector{
+        Selector{
+            ColName: "testcolumnint",
+            Aggregator: "",
+        },
+        Selector{
+            ColName: "testcolumnfloat",
+            Aggregator: "",
+        },
+    }
+
     result, _ := testTable.Select(
-        []string{"testcolumnint", "testcolumnfloat"},
+        sels,
         filters,
     )
 
-    fmt.Println(result) // print on fail
     assert.Equal(t, 63, len(result))
 }
 
@@ -194,8 +204,18 @@ func Test_Selecting(t *testing.T) {
             Val: "tester",
         },
     }
+    sels := []Selector{
+        Selector{
+            ColName: "testcolumnint",
+            Aggregator: "",
+        },
+        Selector{
+            ColName: "testcolumnfloat",
+            Aggregator: "",
+        },
+    }
     result, _ := testTable.Select(
-        []string{"testcolumnint", "testcolumnstr", "testcolumnfloat"},
+        sels,
         filters,
     )
     
@@ -205,4 +225,80 @@ func Test_Selecting(t *testing.T) {
     }
 
     assert.Equal(t, 20, len(result))
+}
+
+func Test_Summing(t *testing.T) {
+
+    tm := TableMetadata{
+        "testcolumnint": ColumnMetadata{
+            Type: "int",
+            Name: "testcolumnint",
+            Order: 0,
+        },
+        "testcolumnstr": ColumnMetadata{
+            Type: "string",
+            Name: "testcolumnstr",
+            Order: 1,
+        },
+        "testcolumnfloat": ColumnMetadata{
+            Type: "float",
+            Name: "testcolumnfloat",
+            Order: 2,
+        },
+        "testcolumnbool": ColumnMetadata{
+            Type: "bool",
+            Name: "testcolumnbool",
+            Order: 3,
+        },
+    }
+    testTable := NewTable(tm)
+    
+    for i := 0; i < 10; i++ {
+        for j := 0; j < 10; j++ {
+            testObj := map[string]interface{}{
+                "testcolumnint": (int32)(i),
+                "testcolumnstr": "tester",
+                "testcolumnfloat": (float64)(j),
+                "testcolumnbool": false,
+            }
+            testTable.InsertObject(testObj)
+        }
+    }
+    
+    filters := []filter{
+        IntFilter{
+            Col: "testcolumnint",
+            Op: ">",
+            Val: (int32)(6),
+        },
+        StringFilter{
+            Col: "testcolumnstr",
+            Op: "=",
+            Val: "tester",
+        },
+    }
+    sels := []Selector{
+        Selector{
+            ColName: "testcolumnint",
+            Aggregator: "sum",
+        },
+        Selector{
+            ColName: "testcolumnfloat",
+            Aggregator: "sum",
+        },
+    }
+    result, _ := testTable.Select(
+        sels,
+        filters,
+    )
+    
+    assert.Equal(t, 1, len(result))
+
+    val, exists := result[0]["testcolumnint"]
+    assert.True(t, exists)
+    assert.Equal(t, (int32)(240), val.(int32))
+
+    fval, fexists := result[0]["testcolumnfloat"]
+    assert.True(t, fexists)
+    assert.Equal(t, (float64)(135), fval.(float64))
 }
