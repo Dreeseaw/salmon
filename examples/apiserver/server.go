@@ -6,6 +6,7 @@
 package main
 
 import (
+    "log"
     "fmt"
     "net/http"
     "encoding/json"
@@ -26,7 +27,7 @@ type JsonObject struct {
 
 func NewServer() *Server {
 
-    sal := salmon.NewSalmon("localhost:27604")
+    sal := salmon.NewSalmon("router:27604")
     sal.Init("config.yaml")
 
     return &Server{
@@ -36,6 +37,8 @@ func NewServer() *Server {
 
 func (s *Server) Insert(w http.ResponseWriter, req *http.Request) {
     // get obj from req, insert
+    fmt.Println("[apiserver] got insert")
+    log.Println("[apiserver] plz?")
     var jo JsonObject
     dec := json.NewDecoder(req.Body)
     err := dec.Decode(&jo)
@@ -48,7 +51,8 @@ func (s *Server) Insert(w http.ResponseWriter, req *http.Request) {
     obj["strcol"] = jo.Strcol
     obj["boolcol"] = jo.Boolcol
     obj["floatcol"] = jo.Floatcol
-
+    
+    fmt.Println(obj)
     err = s.sal.Insert("maintable", obj)
     if err != nil {
         panic(err)
@@ -57,6 +61,7 @@ func (s *Server) Insert(w http.ResponseWriter, req *http.Request) {
 
 func (s *Server) PrintTable(w http.ResponseWriter, req *http.Request) {
     // dump only this client's table (will have to be changed when selects are distr)
+    fmt.Println("[apiserver] got print_table")
     sels := []string{"intcol","strcol","boolcol","floatcol"} // need * identifier
     objs, err := s.sal.Select("maintable", sels, nil)
     if err != nil {
