@@ -6,7 +6,10 @@ package main
 import (
     "io"
     "fmt"
+    "errors"
     "context"
+
+    "google.golang.org/grpc/metadata"
 
     pb "github.com/Dreeseaw/salmon/grpc"
 )
@@ -17,24 +20,14 @@ type RoutingServer struct {
     pb.UnimplementedRouterServiceServer
 
     InsertChan  InsertCommChan // send insert commands to router
-    ConnectChan chan *Client // for new clients to be added to engine
-    ClientMap   map[string]*Client // mirror of engine TODO: extrapolate
+    Clients     *ClientMap
 }
 
-func NewRoutingServer(ic InsertCommChan, cc chan *Client) *RoutingServer {
+func NewRoutingServer(cm *ClientMap, ic InsertCommChan) *RoutingServer {
     return &RoutingServer{
         InsertChan: ic,
-        ConnectChan: cc,
-        ClientMap: make(map[string]*Client),
+        Clients: cm,
     }
-}
-
-// Connect a new client, send over to engine as well
-func (rs *RoutingServer) GetClient(id string) *Client {
-    if cli, has := rs.ClientMap[id]; has { // TODO: protect map with mutex
-        return cli
-    }
-    return nil 
 }
 
 // Unary rpc
@@ -42,8 +35,7 @@ func (rs *RoutingServer) Connect(ctx context.Context, ci *pb.ClientID) (*pb.Succ
     // TODO: clean up
     cid := ci.GetId()
     cli := &Client{cid, make(InsertCommChan)}
-    rs.ConnectChan <- cli
-    rs.ClientMap[cid] = cli
+    rs.Clients.Add(cli)
     fmt.Printf("[server] client connected %v\n", cid)
     return &pb.SuccessResponse{Success: true, Id: "connected"}, nil
 }
@@ -85,8 +77,24 @@ func (rs *RoutingServer) SendSelect(sc *pb.SelectCommand, stream pb.RouterServic
 func (rs *RoutingServer) ReceiveReplicas(stream pb.RouterService_ReceiveReplicasServer) error {
     
     fin := make(chan blank)
-    cliId := stream.Context().Value(idContextKey("id"))
-    cli := rs.GetClient(cliId.(string))
+
+    md, ok := metadata.FromIncomingContext(stream.Context())
+    if !ok {
+        return errors.New("no context attached!")
+    }
+    cliId := md.Get("id")
+
+    /*
+    ctx := stream.Context()
+    cliId2 := ctx.Value(uint32(0))
+    fmt.Printf("id found: %v", cliId2)
+    cliId = cliId2.(string)
+    */
+    fmt.Printf("id found: %v", cliId)
+    cli, err := rs.Clients.Get(cliId[0])
+    if err != nil {
+        return err
+    }
 
     // start server streaming goroutine
     go func() {

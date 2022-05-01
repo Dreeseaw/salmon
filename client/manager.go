@@ -131,6 +131,7 @@ func (m *Manager) ProcessInsert(command InsertCommand) CommandResult {
     if result.Error != nil {
         return result
     }
+    fmt.Printf("obj added to %v", m.ClientId)
 
     // send to router to be replicated
     ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

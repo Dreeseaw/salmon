@@ -6,10 +6,10 @@ import (
 //    "time"
     "context"
 
+    "google.golang.org/grpc/metadata"
+    
     pb "github.com/Dreeseaw/salmon/grpc"
 )
-
-type idContextKey string
 
 type ReplicaReceiver struct {
     ClientId    string
@@ -30,8 +30,8 @@ func NewReplicaReceiver(id string, mc chan Command) *ReplicaReceiver {
 
 func (rr *ReplicaReceiver) Start(client pb.RouterServiceClient) {
     
-    idk := idContextKey("id")
-    ctx := context.WithValue(context.Background(), idk, rr.ClientId)
+    md := metadata.New(map[string]string{"id": rr.ClientId})
+    ctx := metadata.NewOutgoingContext(context.Background(), md)
     // defer cancel()
 
     // create duplex rpc stream
