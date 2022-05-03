@@ -113,6 +113,7 @@ func (sal *Salmon) Insert(table string, object Object) error {
 
     // validate object
     cmd := InsertCommand{
+        Id: "local",
         TableName: table,
         Obj: object,
         ResultChan: rc,
@@ -146,10 +147,9 @@ func (sal *Salmon) Select(table string, selectors []string, filters []filter) ([
 
     // wait for results
     results, _ := <- rc
-
-    if results.Error != nil {
+    
+    if results.Error == nil {
         return results.Objects, nil
     }
     return nil, results.Error
-
 }

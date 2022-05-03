@@ -6,7 +6,7 @@ package main
 import (
     "io"
     "fmt"
-    "errors"
+    // "errors"
     "context"
 
     "google.golang.org/grpc/metadata"
@@ -78,19 +78,8 @@ func (rs *RoutingServer) ReceiveReplicas(stream pb.RouterService_ReceiveReplicas
     
     fin := make(chan blank)
 
-    md, ok := metadata.FromIncomingContext(stream.Context())
-    if !ok {
-        return errors.New("no context attached!")
-    }
+    md, _ := metadata.FromIncomingContext(stream.Context())
     cliId := md.Get("id")
-
-    /*
-    ctx := stream.Context()
-    cliId2 := ctx.Value(uint32(0))
-    fmt.Printf("id found: %v", cliId2)
-    cliId = cliId2.(string)
-    */
-    fmt.Printf("id found: %v", cliId)
     cli, err := rs.Clients.Get(cliId[0])
     if err != nil {
         return err

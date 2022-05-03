@@ -111,6 +111,10 @@ func (m *Manager) Process(cmd Command) {
         command.ResultChan <- m.ProcessInsert(command)
     case SelectCommand:
         command.ResultChan <- m.ProcessSelect(command)
+    case *InsertCommand:
+        command.ResultChan <- m.ProcessInsert(*command)
+    default:
+        fmt.Println(command)
     }
 }
 
@@ -122,6 +126,7 @@ func (m *Manager) ProcessInsert(command InsertCommand) CommandResult {
     table, exists := m.Tables[command.TableName]
     if exists {
         result.Error = table.InsertObject(command.Obj)
+        // fmt.Printf("obj added to %v", m.ClientId)
     } else {
         result.Error = errors.New(
             fmt.Sprintf("got insert command for unknown table %v", command.TableName),
@@ -131,8 +136,10 @@ func (m *Manager) ProcessInsert(command InsertCommand) CommandResult {
     if result.Error != nil {
         return result
     }
-    fmt.Printf("obj added to %v", m.ClientId)
 
+    if command.Id == "fromrouter" {
+        return result
+    }
     // send to router to be replicated
     ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
     defer cancel()
@@ -169,7 +176,6 @@ func (m *Manager) ProcessSelect(command SelectCommand) CommandResult {
             fmt.Sprintf("got select command for unknown table %v", command.TableName),
         )
     }
-
     return result
 }
 

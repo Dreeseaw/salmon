@@ -79,10 +79,14 @@ func (re *RoutingEngine) ProcessInsert(ic *pb.InsertCommand) {
     // get pkeys
 
     // get list of client replica chans to send to
-    replChans := re.ReplRouter.GetReplicaList()
+    // replChans := re.ReplRouter.GetReplicaList()
 
-    for _, replChan := range replChans {
-        replChan <- ic
+    //for _, replChan := range replChans {
+    //    replChan <- ic
+    //}
+
+    for _, cli := range re.Clients.GetAll() {
+        cli.ReplChan <- ic
     }
 
     return

@@ -53,3 +53,15 @@ func (cm *ClientMap) Get(cliID string) (*Client, error) {
     }
     return cli, nil
 }
+
+func (cm *ClientMap) GetAll() []*Client {
+    cm.mu.RLock()
+    defer cm.mu.RUnlock()
+
+    retter := make([]*Client, 0)
+    for _, cli := range cm.clis {
+        retter = append(retter, cli)
+    }
+
+    return retter
+}

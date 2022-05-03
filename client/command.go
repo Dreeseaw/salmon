@@ -32,9 +32,13 @@ type CommandResult struct {
     Objects []Object
 }
 
-func InsertCommandFromPb(inp *pb.InsertCommand, tm TableMetadata, rc chan CommandResult) *InsertCommand {
-    obj, _ := ObjectFromPb(inp.GetObj(), tm)
-    return &InsertCommand{
+func InsertCommandFromPb(inp *pb.InsertCommand, tm TableMetadata, rc chan CommandResult) InsertCommand {
+    obj, err := ObjectFromPb(inp.GetObj(), tm)
+    if err != nil {
+        panic(err)
+    }
+    return InsertCommand{
+        Id: "fromrouter",
         TableName: inp.GetTable(),
         Obj: obj,
         ResultChan: rc,
@@ -80,13 +84,13 @@ func ObjectFromPb(inp *pb.Object, tm TableMetadata) (Object, error) {
         colName := colList[i].Name
         switch val := anyField.Value.(type) {
         case *pb.FieldType_Sval:
-            obj[colName] = val
+            obj[colName] = val.Sval
         case *pb.FieldType_Fval:
-            obj[colName] = val
+            obj[colName] = val.Fval
         case *pb.FieldType_Ival:
-            obj[colName] = val
+            obj[colName] = val.Ival
         case *pb.FieldType_Bval:
-            obj[colName] = val
+            obj[colName] = val.Bval
         case nil:
             return nil, errors.New("nil value found for field")
         default:
