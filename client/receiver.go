@@ -3,13 +3,14 @@ package salmon
 import (
     "io"
     "log"
+     // "fmt"
 //    "time"
     "context"
 
+    "google.golang.org/grpc/metadata"
+    
     pb "github.com/Dreeseaw/salmon/grpc"
 )
-
-type idContextKey string
 
 type ReplicaReceiver struct {
     ClientId    string
@@ -30,8 +31,8 @@ func NewReplicaReceiver(id string, mc chan Command) *ReplicaReceiver {
 
 func (rr *ReplicaReceiver) Start(client pb.RouterServiceClient) {
     
-    idk := idContextKey("id")
-    ctx := context.WithValue(context.Background(), idk, rr.ClientId)
+    md := metadata.New(map[string]string{"id": rr.ClientId})
+    ctx := metadata.NewOutgoingContext(context.Background(), md)
     // defer cancel()
 
     // create duplex rpc stream
@@ -44,7 +45,7 @@ func (rr *ReplicaReceiver) Start(client pb.RouterServiceClient) {
 
     // get pb.InsertCommand from router,
     // send InsertCommand to manager
-    go func() {
+    go func(mc chan Command) {
         for {
             replicaComm, err := stream.Recv()
             if err == io.EOF {
@@ -61,9 +62,10 @@ func (rr *ReplicaReceiver) Start(client pb.RouterServiceClient) {
             ic := InsertCommandFromPb(replicaComm, tMeta, rr.SuccessChan)
 
             // send replica (insert) command
-            rr.ManagerChan <- ic
+            // fmt.Printf("sending ic\n")
+            mc <- &ic
         }
-    }()
+    }(rr.ManagerChan)
 
     // send success responses back to router
     for {
