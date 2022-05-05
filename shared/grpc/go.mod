@@ -1,4 +1,4 @@
-module github.com/Dreeseaw/salmon/grpc
+module github.com/Dreeseaw/salmon/shared/grpc
 
 go 1.17
 
