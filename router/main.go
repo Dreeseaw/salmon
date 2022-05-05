@@ -10,7 +10,7 @@ import (
 
     "google.golang.org/grpc"
 
-    pb "github.com/Dreeseaw/salmon/grpc"
+    pb "github.com/Dreeseaw/salmon/shared/grpc"
 )
 
 type blank struct {}
