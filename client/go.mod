@@ -29,4 +29,4 @@ require (
 	google.golang.org/protobuf v1.28.0 // indirect
 )
 
-replace github.com/Dreeseaw/salmon/grpc => ../grpc
+replace github.com/Dreeseaw/salmon/grpc => ../shared/grpc

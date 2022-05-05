@@ -1,0 +1,23 @@
+version: "3.9"
+services:
+  router:
+    build: ../../router
+    hostname: router
+    ports:
+      - "0.0.0.0:27604:27604"
+  apiserver1:
+    depends_on:
+      - router
+    build: .
+    hostname: apiserver
+    restart: always
+    ports:
+      - "0.0.0.0:8090:8090"
+  apiserver2:
+    depends_on:
+      - router
+    build: .
+    hostname: apiserver
+    restart: always
+    ports:
+      - "0.0.0.0:8091:8090"
