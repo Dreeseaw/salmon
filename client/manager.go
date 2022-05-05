@@ -13,7 +13,7 @@ import (
     "google.golang.org/grpc/credentials/insecure"
     // "github.com/golang/protobuf/proto"
 
-    pb "github.com/Dreeseaw/salmon/grpc"
+    pb "github.com/Dreeseaw/salmon/shared/grpc"
 )
 
 type ManagerOptions struct {
