@@ -31,6 +31,7 @@ func write_config() {
     type: bool
     name: testcolumnbool
     order: 2
+    pkey: false
   testcolumnfloat:
     type: float
     name: testcolumnfloat
