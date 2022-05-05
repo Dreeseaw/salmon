@@ -7,28 +7,30 @@ import (
     "fmt"
     "testing"
 
+    "github.com/Dreeseaw/salmon/shared/config"
+
     "github.com/kelindar/column"
     "github.com/stretchr/testify/assert"
 )
 
 func Test_InsertObject(t *testing.T) {
-    tm := TableMetadata{
-        "testcolumnint": ColumnMetadata{
+    tm := config.TableMetadata{
+        "testcolumnint": config.ColumnMetadata{
             Type: "int",
             Name: "testcolumnint",
             Order: 0,
         },
-        "testcolumnstr": ColumnMetadata{
+        "testcolumnstr": config.ColumnMetadata{
             Type: "string",
             Name: "testcolumnstr",
             Order: 1,
         },
-        "testcolumnfloat": ColumnMetadata{
+        "testcolumnfloat": config.ColumnMetadata{
             Type: "float",
             Name: "testcolumnfloat",
             Order: 2,
         },
-        "testcolumnbool": ColumnMetadata{
+        "testcolumnbool": config.ColumnMetadata{
             Type: "bool",
             Name: "testcolumnbool",
             Order: 3,
@@ -76,23 +78,23 @@ func Test_InsertObject(t *testing.T) {
 
 func Test_Filtering(t *testing.T) {
 
-    tm := TableMetadata{
-        "testcolumnint": ColumnMetadata{
+    tm := config.TableMetadata{
+        "testcolumnint": config.ColumnMetadata{
             Type: "int",
             Name: "testcolumnint",
             Order: 0,
         },
-        "testcolumnstr": ColumnMetadata{
+        "testcolumnstr": config.ColumnMetadata{
             Type: "string",
             Name: "testcolumnstr",
             Order: 1,
         },
-        "testcolumnfloat": ColumnMetadata{
+        "testcolumnfloat": config.ColumnMetadata{
             Type: "float",
             Name: "testcolumnfloat",
             Order: 2,
         },
-        "testcolumnbool": ColumnMetadata{
+        "testcolumnbool": config.ColumnMetadata{
             Type: "bool",
             Name: "testcolumnbool",
             Order: 3,
@@ -146,23 +148,23 @@ func Test_Filtering(t *testing.T) {
 
 func Test_Selecting(t *testing.T) {
 
-    tm := TableMetadata{
-        "testcolumnint": ColumnMetadata{
+    tm := config.TableMetadata{
+        "testcolumnint": config.ColumnMetadata{
             Type: "int",
             Name: "testcolumnint",
             Order: 0,
         },
-        "testcolumnstr": ColumnMetadata{
+        "testcolumnstr": config.ColumnMetadata{
             Type: "string",
             Name: "testcolumnstr",
             Order: 1,
         },
-        "testcolumnfloat": ColumnMetadata{
+        "testcolumnfloat": config.ColumnMetadata{
             Type: "float",
             Name: "testcolumnfloat",
             Order: 2,
         },
-        "testcolumnbool": ColumnMetadata{
+        "testcolumnbool": config.ColumnMetadata{
             Type: "bool",
             Name: "testcolumnbool",
             Order: 3,

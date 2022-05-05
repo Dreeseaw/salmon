@@ -7,21 +7,25 @@
 package main
 
 import (
-
+    "github.com/Dreeseaw/salmon/shared/config"
     pb "github.com/Dreeseaw/salmon/shared/grpc"
 )
+
+type InsertCommChan chan *pb.InsertCommand
 
 type RoutingEngine struct {
     InsertInChan InsertCommChan
     ReplRouter   ReplicaRouter
     Clients      *ClientMap
+    Tables       map[string]config.TableMetadata
 }
 
-func NewRoutingEngine(cm *ClientMap, ic InsertCommChan) *RoutingEngine{
+func NewRoutingEngine(cm *ClientMap, ic InsertCommChan, tm map[string]config.TableMetadata) *RoutingEngine {
     return &RoutingEngine{
         InsertInChan: ic,
         ReplRouter: NewBaseReplicaRouter(cm),
         Clients: cm,
+        Tables: tm,
     }
 }
 
@@ -40,8 +44,6 @@ func (re *RoutingEngine) Start() {
 
     return
 }
-
-type InsertCommChan chan *pb.InsertCommand
 
 type ReplChanMap map[string]InsertCommChan
 

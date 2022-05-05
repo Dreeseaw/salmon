@@ -2,9 +2,13 @@ module github.com/Dreeseaw/salmon/router
 
 go 1.17
 
-replace github.com/Dreeseaw/salmon/shared/grpc => ../shared/grpc
+replace (
+	github.com/Dreeseaw/salmon/shared/config => ../shared/config
+	github.com/Dreeseaw/salmon/shared/grpc => ../shared/grpc
+)
 
 require (
+	github.com/Dreeseaw/salmon/shared/config v0.0.0-00010101000000-000000000000
 	github.com/Dreeseaw/salmon/shared/grpc v0.0.0-00010101000000-000000000000
 	google.golang.org/grpc v1.46.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b

@@ -9,12 +9,13 @@ import (
 
     "google.golang.org/grpc/metadata"
     
+    "github.com/Dreeseaw/salmon/shared/config"
     pb "github.com/Dreeseaw/salmon/shared/grpc"
 )
 
 type ReplicaReceiver struct {
     ClientId    string
-    TableData   map[string]TableMetadata
+    TableData   map[string]config.TableMetadata
     SuccessChan chan CommandResult
     ManagerChan chan Command
 }
@@ -23,7 +24,7 @@ func NewReplicaReceiver(id string, mc chan Command) *ReplicaReceiver {
     sc := make(chan CommandResult)
     return &ReplicaReceiver{
         ClientId: id,
-        TableData: make(map[string]TableMetadata),
+        TableData: make(map[string]config.TableMetadata),
         SuccessChan: sc,
         ManagerChan: mc,
     }

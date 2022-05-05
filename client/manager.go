@@ -13,6 +13,7 @@ import (
     "google.golang.org/grpc/credentials/insecure"
     // "github.com/golang/protobuf/proto"
 
+    "github.com/Dreeseaw/salmon/shared/config"
     pb "github.com/Dreeseaw/salmon/shared/grpc"
 )
 
@@ -44,7 +45,7 @@ func NewManager(mo ManagerOptions) *Manager {
 }
 
 // Init manager client & tables
-func (m *Manager) Init(tableData map[string]TableMetadata) func() error {
+func (m *Manager) Init(tableData map[string]config.TableMetadata) func() error {
 
     // init client
     closeFunc, routerCli := m.NewRouterClient()

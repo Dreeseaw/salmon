@@ -4,6 +4,8 @@ import (
     "os"
     "testing"
 
+    "github.com/Dreeseaw/salmon/shared/config"
+
 	"github.com/kelindar/column"
     "github.com/stretchr/testify/assert"
 )
@@ -45,10 +47,9 @@ func write_test_config() {
 func Test_ReadConfig(t *testing.T) {
 
     // create new yaml file to read in
-    test_sal := NewSalmon("mock")
     write_test_config()
 
-    tm, err := test_sal.ReadConfig(TMP_CONFIG)
+    tm, err := config.ReadConfig(TMP_CONFIG)
 
     assert.Nil(t, err)
     assert.Equal(t, len(tm), 1)

@@ -3,6 +3,7 @@ module github.com/Dreeseaw/salmon/client
 go 1.17
 
 require (
+	github.com/Dreeseaw/salmon/shared/config v0.0.0-00010101000000-000000000000
 	github.com/Dreeseaw/salmon/shared/grpc v0.0.0-20220505012613-79dc0ed87b6a
 	github.com/google/uuid v1.3.0
 	github.com/kelindar/column v0.0.0-20220310063741-ee265e7d894c
@@ -29,4 +30,7 @@ require (
 	google.golang.org/protobuf v1.28.0 // indirect
 )
 
-replace github.com/Dreeseaw/salmon/shared/grpc => ../shared/grpc
+replace (
+	github.com/Dreeseaw/salmon/shared/config => ../shared/config
+	github.com/Dreeseaw/salmon/shared/grpc => ../shared/grpc
+)

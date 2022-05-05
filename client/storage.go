@@ -8,6 +8,8 @@ import (
 //	"errors"
     "fmt"
 
+    "github.com/Dreeseaw/salmon/shared/config"
+
 	"github.com/kelindar/column"
 )
 
@@ -22,18 +24,18 @@ var CollectionTypeMap = map[string]ColFunc{
 
 type Table struct {
     Coll *column.Collection
-    Meta TableMetadata
+    Meta config.TableMetadata
 }
 
-func orderColList(tm TableMetadata) []ColumnMetadata {
-    ret := make([]ColumnMetadata, len(tm))
+func orderColList(tm config.TableMetadata) []config.ColumnMetadata {
+    ret := make([]config.ColumnMetadata, len(tm))
     for _, colMeta := range tm {
         ret[colMeta.Order] = colMeta
     }
     return ret
 } 
 
-func NewTable(tm TableMetadata) *Table {
+func NewTable(tm config.TableMetadata) *Table {
     coll := column.NewCollection()
 
     // create columns in correct order
