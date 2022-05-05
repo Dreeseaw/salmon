@@ -11,6 +11,7 @@ type ColumnMetadata struct {
     Type  string `json:"type"`
     Name  string 
     Order int
+    PKey  bool
 }
 
 type TableMetadata map[string]ColumnMetadata
@@ -38,6 +39,7 @@ func ReadConfig(filePath string) (map[string]TableMetadata, error) {
                 Type: (colData.(map[string]interface{}))["type"].(string),
                 Name: colName,
                 Order: (colData.(map[string]interface{}))["order"].(int),
+                PKey: false,
             }
             cols[colName] = newCol
         }
