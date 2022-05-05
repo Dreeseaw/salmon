@@ -8,7 +8,7 @@ package main
 
 import (
 
-    pb "github.com/Dreeseaw/salmon/grpc"
+    pb "github.com/Dreeseaw/salmon/shared/grpc"
 )
 
 type RoutingEngine struct {

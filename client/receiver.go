@@ -9,7 +9,7 @@ import (
 
     "google.golang.org/grpc/metadata"
     
-    pb "github.com/Dreeseaw/salmon/grpc"
+    pb "github.com/Dreeseaw/salmon/shared/grpc"
 )
 
 type ReplicaReceiver struct {

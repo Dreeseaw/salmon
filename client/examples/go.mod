@@ -26,5 +26,5 @@ require (
 )
 
 replace (
-    github.com/Dreeseaw/salmon/client => ../client/
+    github.com/Dreeseaw/salmon/client => ../../client/
 )

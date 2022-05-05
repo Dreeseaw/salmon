@@ -17,5 +17,8 @@ jobs:
       - name: Check out monorepo
         uses: actions/checkout@v2
       - name: Run Go tests
-        run: go test ./...
+        run: make test
+        working-directory: ./${{ matrix.project }}
+      - name: Validate Go build
+        run: make build
         working-directory: ./${{ matrix.project }}
