@@ -4,8 +4,6 @@ import (
     "os"
     "testing"
 
-    "github.com/Dreeseaw/salmon/shared/config"
-
 	"github.com/kelindar/column"
     "github.com/stretchr/testify/assert"
 )
