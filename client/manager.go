@@ -142,6 +142,7 @@ func (m *Manager) ProcessInsert(command InsertCommand) CommandResult {
         return result
     }
     // send to router to be replicated
+    command.Id = m.ClientId
     ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
     defer cancel()
     resp, err := m.RouterClient.SendInsert(ctx, InsertCommandToPb(command, table.Meta))

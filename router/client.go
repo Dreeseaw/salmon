@@ -54,6 +54,18 @@ func (cm *ClientMap) Get(cliID string) (*Client, error) {
     return cli, nil
 }
 
+func (cm *ClientMap) GetMany(ids []string) ([]*Client, error) {
+    clis := make([]*Client, 0)
+    for _, idn := range ids {
+        cli, err := cm.Get(idn)
+        if err != nil {
+            return nil, err 
+        }
+        clis = append(clis, cli)
+    }
+    return clis, nil
+}
+
 func (cm *ClientMap) GetAll() []*Client {
     cm.mu.RLock()
     defer cm.mu.RUnlock()

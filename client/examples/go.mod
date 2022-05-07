@@ -5,7 +5,8 @@ go 1.17
 require github.com/Dreeseaw/salmon/client v0.0.0-20220424153844-4c66ba1c5c55
 
 require (
-	github.com/Dreeseaw/salmon/grpc v0.0.0-20220424153844-4c66ba1c5c55 // indirect
+	github.com/Dreeseaw/salmon/shared/config v0.0.0-00010101000000-000000000000 // indirect
+	github.com/Dreeseaw/salmon/shared/grpc v0.0.0-20220505012613-79dc0ed87b6a // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/kelindar/bitmap v1.2.1 // indirect
@@ -26,5 +27,7 @@ require (
 )
 
 replace (
-    github.com/Dreeseaw/salmon/client => ../../client/
+	github.com/Dreeseaw/salmon/client => ../.
+	github.com/Dreeseaw/salmon/shared/config => ../../shared/config
+	github.com/Dreeseaw/salmon/shared/grpc => ../../shared/grpc
 )
