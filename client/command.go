@@ -71,7 +71,7 @@ func InsertCommandToPb(inp InsertCommand, tm config.TableMetadata) *pb.InsertCom
     }
 
     return &pb.InsertCommand{
-        Iid: "test",
+        Iid: inp.Id,
         Table: inp.TableName,
         Obj: &pb.Object{Field: fields},
     }

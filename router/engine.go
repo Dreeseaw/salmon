@@ -78,6 +78,8 @@ func (re *RoutingEngine) ProcessInsert(ic *pb.InsertCommand) {
     // find partition set (existence gaurenteed)
     pSet, _ := re.Partitions[ic.GetTable()]
 
+    pSet.UpdateClients(re.Clients)
+
     obj, err := ObjectFromPb(ic.GetObj(), tMeta)
     if err != nil {
         panic(err) // TODO: return error, not panic

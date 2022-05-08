@@ -109,18 +109,18 @@ func (m *Manager) Start(fin chan blank) {
 func (m *Manager) Process(cmd Command) {
     switch command := cmd.(type) {
     case InsertCommand:
-        command.ResultChan <- m.ProcessInsert(command)
+        command.ResultChan <- m.ProcessInsert(&command)
     case SelectCommand:
         command.ResultChan <- m.ProcessSelect(command)
     case *InsertCommand:
-        command.ResultChan <- m.ProcessInsert(*command)
+        command.ResultChan <- m.ProcessInsert(command)
     default:
         fmt.Println(command)
     }
 }
 
 // Process an Insert command
-func (m *Manager) ProcessInsert(command InsertCommand) CommandResult {
+func (m *Manager) ProcessInsert(command *InsertCommand) CommandResult {
     result := CommandResult{"default", nil, nil}
 
     // attempt to store locally first (natural object validation)
@@ -145,7 +145,7 @@ func (m *Manager) ProcessInsert(command InsertCommand) CommandResult {
     command.Id = m.ClientId
     ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
     defer cancel()
-    resp, err := m.RouterClient.SendInsert(ctx, InsertCommandToPb(command, table.Meta))
+    resp, err := m.RouterClient.SendInsert(ctx, InsertCommandToPb(*command, table.Meta))
     if err != nil {
         result.Error = err
     }
