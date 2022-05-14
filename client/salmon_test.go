@@ -42,19 +42,6 @@ func write_test_config() {
     }
 }
 
-func Test_ReadConfig(t *testing.T) {
-
-    // create new yaml file to read in
-    test_sal := NewSalmon("mock")
-    write_test_config()
-
-    tm, err := test_sal.ReadConfig(TMP_CONFIG)
-
-    assert.Nil(t, err)
-    assert.Equal(t, len(tm), 1)
-    assert.Equal(t, len(tm["testtable"]), 4)
-}
-
 func Test_Insert_NoRouter(t *testing.T) {
 
     testSal := NewSalmon("mock")

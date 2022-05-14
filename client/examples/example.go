@@ -8,56 +8,24 @@ package main
 import (
 	"fmt"
     "time"
-	"os"
+	// "os"
 
 	salmon "github.com/Dreeseaw/salmon/client"
 )
 
 const (
-	configFile string = "/tmp/salmon.yaml"
+	configFile string = "/etc/salmon.yaml"
 )
-
-func write_config() {
-
-	if _, err := os.Stat(configFile); err == nil {
-		os.Remove(configFile)
-	}
-
-	yaml_txt := []byte(`testtable:
-  testcolumnint:
-    type: int
-    name: testcolumnint
-    order: 0
-  testcolumnstr:
-    type: string
-    name: testcolumnstr
-    order: 1
-  testcolumnbool:
-    type: bool
-    name: testcolumnbool
-    order: 2
-  testcolumnfloat:
-    type: float
-    name: testcolumnfloat
-    order: 3`)
-
-	err := os.WriteFile(configFile, yaml_txt, 0644)
-	if err != nil {
-		panic(err)
-	}
-}
 
 func main() {
 
-	// create table config
-	write_config()
-
     // create 4 clients
     var clis [4]*salmon.Salmon
+
     i := 0
     for i <= 3 {
         sal := salmon.NewSalmon("localhost:27604")
-        sal.Init("/tmp/salmon.yaml")
+        sal.Init(configFile)
         sal.Start()
         clis[i] = sal
         fmt.Printf("Started salmon client %v\n", i)
@@ -69,14 +37,14 @@ func main() {
     for i <= 3 {
         go func(i int) {
             sal := clis[i]
-            for j := 0; j < 2; j++ {
+            for j := 0; j < 3; j++ {
                 myObj := map[string]interface{}{
-                    "testcolumnint": (int32)(i),
-                    "testcolumnstr": "tester",
-                    "testcolumnfloat": (float64)(j),
-                    "testcolumnbool": false,
+                    "intcol": (int32)(i),
+                    "strcol": "tester",
+                    "floatcol": (float64)(j),
+                    "boolcol": false,
                 }
-                err := sal.Insert("testtable", myObj)
+                err := sal.Insert("maintable", myObj)
                 if err != nil {
                     panic(err)
                 }
@@ -91,8 +59,8 @@ func main() {
     // print local table
     i = 0
     for i <= 3 {
-        sels := []string{"testcolumnint", "testcolumnfloat"}
-        objs, err := clis[i].Select("testtable", sels, nil)
+        sels := []string{"intcol", "floatcol"}
+        objs, err := clis[i].Select("maintable", sels, nil)
         if err != nil {
             panic(err)
         }

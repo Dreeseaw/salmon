@@ -7,20 +7,20 @@ go interface to cache
 package salmon
 
 import (
-    "fmt"
     // "errors"
-    "io/ioutil"
-    "gopkg.in/yaml.v3"
+    "github.com/Dreeseaw/salmon/shared/config"
 )
 
 type blank struct {}
 
+/*
 type ColumnMetadata struct {
     Type  string `json:"type"`
     Name  string 
     Order int
 }
 type TableMetadata map[string]ColumnMetadata
+*/
 
 type Salmon struct {
     ManagerThread  *Manager
@@ -46,10 +46,10 @@ func NewSalmon(serverAddr string) *Salmon {
 }
 
 // Init the salmon client
-func (sal *Salmon) Init(config string) error {
+func (sal *Salmon) Init(configFilePath string) error {
 
     // read in config file
-    tables, err := sal.ReadConfig(config)
+    tables, err := config.ReadConfig(configFilePath)
     if err != nil {
         return err
     }
@@ -59,6 +59,7 @@ func (sal *Salmon) Init(config string) error {
 }
 
 // Read in a table config yaml
+/*
 func (sal *Salmon) ReadConfig(filePath string) (map[string]TableMetadata, error) {
     yfile, err := ioutil.ReadFile(filePath)
     if err != nil {
@@ -90,6 +91,7 @@ func (sal *Salmon) ReadConfig(filePath string) (map[string]TableMetadata, error)
     }
     return tables, nil
 }
+*/
 
 // Start the salmon client
 func (sal *Salmon) Start() error {

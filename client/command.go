@@ -4,6 +4,7 @@ import (
     "errors"
 //    "strconv"
 
+    "github.com/Dreeseaw/salmon/shared/config"
     pb "github.com/Dreeseaw/salmon/shared/grpc"
 )
 
@@ -32,7 +33,7 @@ type CommandResult struct {
     Objects []Object
 }
 
-func InsertCommandFromPb(inp *pb.InsertCommand, tm TableMetadata, rc chan CommandResult) InsertCommand {
+func InsertCommandFromPb(inp *pb.InsertCommand, tm config.TableMetadata, rc chan CommandResult) InsertCommand {
     obj, err := ObjectFromPb(inp.GetObj(), tm)
     if err != nil {
         panic(err)
@@ -45,7 +46,7 @@ func InsertCommandFromPb(inp *pb.InsertCommand, tm TableMetadata, rc chan Comman
     }
 }
 
-func InsertCommandToPb(inp InsertCommand, tm TableMetadata) *pb.InsertCommand {
+func InsertCommandToPb(inp InsertCommand, tm config.TableMetadata) *pb.InsertCommand {
 
     fields := make([]*pb.FieldType, len(tm))
 
@@ -70,13 +71,13 @@ func InsertCommandToPb(inp InsertCommand, tm TableMetadata) *pb.InsertCommand {
     }
 
     return &pb.InsertCommand{
-        Iid: "test",
+        Iid: inp.Id,
         Table: inp.TableName,
         Obj: &pb.Object{Field: fields},
     }
 }
 
-func ObjectFromPb(inp *pb.Object, tm TableMetadata) (Object, error) {
+func ObjectFromPb(inp *pb.Object, tm config.TableMetadata) (Object, error) {
     obj := make(Object)
     colList := orderColList(tm)
 

@@ -1,9 +1,0 @@
-testcoll:
-  testcolumnint:
-    type: int
-  testcolumnstr:
-    type: str
-  testcolumnbool:
-    type: bool
-  testcolumnfloat:
-    type: float

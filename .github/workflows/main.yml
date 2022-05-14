@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        project: [client, router]
+        project: [client, router, shared/config]
     steps:
       - name: Set up Go for ${{ matrix.project }}
         uses: actions/setup-go@v2
