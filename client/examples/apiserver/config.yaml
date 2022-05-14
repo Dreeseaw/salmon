@@ -3,10 +3,12 @@ maintable:
     type: int
     name: intcol
     order: 0
+    pkey: True
   strcol:
     type: string
     name: strcol
     order: 1
+    pkey: True
   boolcol:
     type: bool
     name: boolcol

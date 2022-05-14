@@ -15,7 +15,7 @@ type blank struct {}
 
 var (
     port = flag.Int("port", 27604, "the port for the server")
-    configPath = flag.String("configPath", "/tmp/salmon.yaml", "path to config file")
+    configPath = flag.String("config", "/etc/salmon.yaml", "path to config file")
 )
 
 func main() {
