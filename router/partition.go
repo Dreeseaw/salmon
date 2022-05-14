@@ -76,21 +76,21 @@ func (ps *PartitionSet) UpdateClients(clis *ClientMap) {
     return
 }
 
+// Process returns all client ids (including origin) that need object
 func (ps *PartitionSet) Process(obj map[string]interface{}, origin string) []string {
 
     pIds := make([]PartitionID, 0)
-    for i, pk := range ps.PKeys {
+    for _, pk := range ps.PKeys {
         val, _ := obj[pk.Col()]
         hash := pk.Hash(val)
-        fmt.Printf("insert from: %v, pkey %v hashed as %v", origin, i, string(hash))
         pIds = append(pIds, hash)
     }
     pId := mergeIds(pIds)
+    fmt.Printf("[router] insert origin=%v, pkey hash=%v\n", origin, pId)
 
     part, exists := ps.Partitions[string(pId)]
     if !exists {
         // create new partition
-        fmt.Printf("[server] creating new partition %v", string(pId))
         part = NewPartition()
         ps.Partitions[string(pId)] = part
         part.Owners = append(part.Owners, origin)
@@ -100,6 +100,7 @@ func (ps *PartitionSet) Process(obj map[string]interface{}, origin string) []str
         // data locality (store client stats, etc)
         otherOwners := ps.GetRandomOwners(ps.RF-1, origin)
         part.Owners = append(part.Owners, otherOwners)
+        fmt.Printf("[router] created new partition: pkey hash=%v\n\towners=%v\n", pId, part.Owners)
     }
 
     return part.Owners

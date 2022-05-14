@@ -37,7 +37,7 @@ func main() {
     for i <= 3 {
         go func(i int) {
             sal := clis[i]
-            for j := 0; j < 2; j++ {
+            for j := 0; j < 3; j++ {
                 myObj := map[string]interface{}{
                     "intcol": (int32)(i),
                     "strcol": "tester",
