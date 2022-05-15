@@ -9,18 +9,10 @@ package salmon
 import (
     // "errors"
     "github.com/Dreeseaw/salmon/shared/config"
+    _ "github.com/Dreeseaw/salmon/shared/commands"
 )
 
 type blank struct {}
-
-/*
-type ColumnMetadata struct {
-    Type  string `json:"type"`
-    Name  string 
-    Order int
-}
-type TableMetadata map[string]ColumnMetadata
-*/
 
 type Salmon struct {
     ManagerThread  *Manager

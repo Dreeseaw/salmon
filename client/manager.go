@@ -9,12 +9,11 @@ import (
 
     "github.com/google/uuid"
     "google.golang.org/grpc"
-    // "google.golang.org/grpc/credentials"
     "google.golang.org/grpc/credentials/insecure"
-    // "github.com/golang/protobuf/proto"
 
     "github.com/Dreeseaw/salmon/shared/config"
     pb "github.com/Dreeseaw/salmon/shared/grpc"
+    _ "github.com/Dreeseaw/salmon/shared/commands"
 )
 
 type ManagerOptions struct {

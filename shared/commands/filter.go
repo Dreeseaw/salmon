@@ -1,9 +1,4 @@
-package salmon
-
-import (
-    // "fmt"
-)
-
+package commands
 
 type filter interface {
     Process(interface{}) bool

@@ -27,19 +27,11 @@ type Table struct {
     Meta config.TableMetadata
 }
 
-func orderColList(tm config.TableMetadata) []config.ColumnMetadata {
-    ret := make([]config.ColumnMetadata, len(tm))
-    for _, colMeta := range tm {
-        ret[colMeta.Order] = colMeta
-    }
-    return ret
-} 
-
 func NewTable(tm config.TableMetadata) *Table {
     coll := column.NewCollection()
 
     // create columns in correct order
-    for _, colMeta := range orderColList(tm) {
+    for _, colMeta := range config.OrderColList(tm) {
         colFunc, _ := CollectionTypeMap[colMeta.Type]
         coll.CreateColumn(colMeta.Name, colFunc())
     }

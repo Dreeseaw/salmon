@@ -33,4 +33,5 @@ require (
 replace (
 	github.com/Dreeseaw/salmon/shared/config => ../shared/config
 	github.com/Dreeseaw/salmon/shared/grpc => ../shared/grpc
+	github.com/Dreeseaw/salmon/shared/commands => ../shared/commands
 )

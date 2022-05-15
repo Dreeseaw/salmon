@@ -11,6 +11,7 @@ import (
     
     "github.com/Dreeseaw/salmon/shared/config"
     pb "github.com/Dreeseaw/salmon/shared/grpc"
+    _ "github.com/Dreeseaw/salmon/shared/commands"
 )
 
 type ReplicaReceiver struct {

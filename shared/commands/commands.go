@@ -1,9 +1,6 @@
-package salmon
+package commands
 
 import (
-    "errors"
-//    "strconv"
-
     "github.com/Dreeseaw/salmon/shared/config"
     pb "github.com/Dreeseaw/salmon/shared/grpc"
 )
@@ -50,6 +47,7 @@ func InsertCommandToPb(inp InsertCommand, tm config.TableMetadata) *pb.InsertCom
 
     fields := make([]*pb.FieldType, len(tm))
 
+    // TODO: factor out a ObjectToPb func
     for colName, colMeta := range tm {
         val, _ := inp.Obj[colName]
         field := new(pb.FieldType)
