@@ -9,16 +9,15 @@ import (
 
     "github.com/google/uuid"
     "google.golang.org/grpc"
-    // "google.golang.org/grpc/credentials"
     "google.golang.org/grpc/credentials/insecure"
-    // "github.com/golang/protobuf/proto"
 
     "github.com/Dreeseaw/salmon/shared/config"
     pb "github.com/Dreeseaw/salmon/shared/grpc"
+    cmds "github.com/Dreeseaw/salmon/shared/commands"
 )
 
 type ManagerOptions struct {
-    ManChan    chan Command
+    ManChan    chan cmds.Command
     ServerAddr string
 }
 
@@ -26,7 +25,7 @@ type Manager struct {
     ClientId     string
     ServerAddr   string
     Tables       map[string]*Table
-    ManChan      chan Command
+    ManChan      chan cmds.Command
     ReplicaRecv  *ReplicaReceiver
     RouterClient pb.RouterServiceClient
 }
@@ -106,13 +105,13 @@ func (m *Manager) Start(fin chan blank) {
 }
 
 // Process insert or select
-func (m *Manager) Process(cmd Command) {
-    switch command := cmd.(type) {
-    case InsertCommand:
+func (m *Manager) Process(cm cmds.Command) {
+    switch command := cm.(type) {
+    case cmds.InsertCommand:
         command.ResultChan <- m.ProcessInsert(&command)
-    case SelectCommand:
+    case cmds.SelectCommand:
         command.ResultChan <- m.ProcessSelect(command)
-    case *InsertCommand:
+    case *cmds.InsertCommand:
         command.ResultChan <- m.ProcessInsert(command)
     default:
         fmt.Println(command)
@@ -120,8 +119,8 @@ func (m *Manager) Process(cmd Command) {
 }
 
 // Process an Insert command
-func (m *Manager) ProcessInsert(command *InsertCommand) CommandResult {
-    result := CommandResult{"default", nil, nil}
+func (m *Manager) ProcessInsert(command *cmds.InsertCommand) cmds.CommandResult {
+    result := cmds.CommandResult{"default", nil, nil}
 
     // attempt to store locally first (natural object validation)
     table, exists := m.Tables[command.TableName]
@@ -145,7 +144,7 @@ func (m *Manager) ProcessInsert(command *InsertCommand) CommandResult {
     command.Id = m.ClientId
     ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
     defer cancel()
-    resp, err := m.RouterClient.SendInsert(ctx, InsertCommandToPb(*command, table.Meta))
+    resp, err := m.RouterClient.SendInsert(ctx, cmds.InsertCommandToPb(*command, table.Meta))
     if err != nil {
         result.Error = err
     }
@@ -160,8 +159,8 @@ func (m *Manager) ProcessInsert(command *InsertCommand) CommandResult {
 }
 
 // Process a select command
-func (m *Manager) ProcessSelect(command SelectCommand) CommandResult {
-    var result CommandResult
+func (m *Manager) ProcessSelect(command cmds.SelectCommand) cmds.CommandResult {
+    var result cmds.CommandResult
 
     if table, has := m.Tables[command.TableName]; has {
         resObjects, err := table.Select(command.Selectors, command.Filters)

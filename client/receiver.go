@@ -11,17 +11,18 @@ import (
     
     "github.com/Dreeseaw/salmon/shared/config"
     pb "github.com/Dreeseaw/salmon/shared/grpc"
+    cmds "github.com/Dreeseaw/salmon/shared/commands"
 )
 
 type ReplicaReceiver struct {
     ClientId    string
     TableData   map[string]config.TableMetadata
-    SuccessChan chan CommandResult
-    ManagerChan chan Command
+    SuccessChan chan cmds.CommandResult
+    ManagerChan chan cmds.Command
 }
 
-func NewReplicaReceiver(id string, mc chan Command) *ReplicaReceiver {
-    sc := make(chan CommandResult)
+func NewReplicaReceiver(id string, mc chan cmds.Command) *ReplicaReceiver {
+    sc := make(chan cmds.CommandResult)
     return &ReplicaReceiver{
         ClientId: id,
         TableData: make(map[string]config.TableMetadata),
@@ -46,7 +47,7 @@ func (rr *ReplicaReceiver) Start(client pb.RouterServiceClient) {
 
     // get pb.InsertCommand from router,
     // send InsertCommand to manager
-    go func(mc chan Command) {
+    go func(mc chan cmds.Command) {
         for {
             replicaComm, err := stream.Recv()
             if err == io.EOF {
@@ -60,7 +61,7 @@ func (rr *ReplicaReceiver) Start(client pb.RouterServiceClient) {
 
             tMeta, _ := rr.TableData[replicaComm.GetTable()]
 
-            ic := InsertCommandFromPb(replicaComm, tMeta, rr.SuccessChan)
+            ic := cmds.InsertCommandFromPb(replicaComm, tMeta, rr.SuccessChan)
 
             // send replica (insert) command
             // fmt.Printf("sending ic\n")
@@ -72,7 +73,7 @@ func (rr *ReplicaReceiver) Start(client pb.RouterServiceClient) {
     for {
         select {
         case resp := <- rr.SuccessChan:
-            succ := ResponseToPb(resp)
+            succ := cmds.ResponseToPb(resp)
             if err := stream.Send(succ); err != nil {
                 log.Fatalf("Failed to send a note: %v", err)
 		    }

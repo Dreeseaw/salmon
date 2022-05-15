@@ -9,28 +9,20 @@ package salmon
 import (
     // "errors"
     "github.com/Dreeseaw/salmon/shared/config"
+    cmds "github.com/Dreeseaw/salmon/shared/commands"
 )
 
 type blank struct {}
 
-/*
-type ColumnMetadata struct {
-    Type  string `json:"type"`
-    Name  string 
-    Order int
-}
-type TableMetadata map[string]ColumnMetadata
-*/
-
 type Salmon struct {
     ManagerThread  *Manager
-    ManagerChannel chan Command
+    ManagerChannel chan cmds.Command
     FinishChannel  chan blank
     CloseClient    func() error
 }
 
 func NewSalmon(serverAddr string) *Salmon {
-    mc  := make(chan Command)
+    mc  := make(chan cmds.Command)
     fc  := make(chan blank)
     man  := NewManager(ManagerOptions{
         ManChan: mc,
@@ -108,13 +100,13 @@ func (sal *Salmon) Close() {
 }
 
 // Insert an object into the system
-func (sal *Salmon) Insert(table string, object Object) error {
+func (sal *Salmon) Insert(table string, object cmds.Object) error {
     
     // create result channel
-    rc := make(chan CommandResult)
+    rc := make(chan cmds.CommandResult)
 
     // validate object
-    cmd := InsertCommand{
+    cmd := cmds.InsertCommand{
         Id: "local",
         TableName: table,
         Obj: object,
@@ -131,13 +123,13 @@ func (sal *Salmon) Insert(table string, object Object) error {
 }
 
 // Select queries a table in a SQL-ish fashion
-func (sal *Salmon) Select(table string, selectors []string, filters []filter) ([]Object, error) {
+func (sal *Salmon) Select(table string, selectors []string, filters []cmds.Filter) ([]cmds.Object, error) {
    
     // result channel
-    rc := make(chan CommandResult)
+    rc := make(chan cmds.CommandResult)
 
     // create command
-    cmd := SelectCommand{
+    cmd := cmds.SelectCommand{
         TableName: table,
         Selectors: selectors,
         Filters: filters,

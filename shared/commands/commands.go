@@ -1,8 +1,7 @@
-package salmon
+package commands
 
 import (
     "errors"
-//    "strconv"
 
     "github.com/Dreeseaw/salmon/shared/config"
     pb "github.com/Dreeseaw/salmon/shared/grpc"
@@ -23,7 +22,7 @@ type SelectCommand struct {
     Id         string
     TableName  string
     Selectors  []string
-    Filters    []filter
+    Filters    []Filter
     ResultChan chan CommandResult
 }
 
@@ -50,6 +49,7 @@ func InsertCommandToPb(inp InsertCommand, tm config.TableMetadata) *pb.InsertCom
 
     fields := make([]*pb.FieldType, len(tm))
 
+    // TODO: factor out a ObjectToPb func
     for colName, colMeta := range tm {
         val, _ := inp.Obj[colName]
         field := new(pb.FieldType)
@@ -79,7 +79,7 @@ func InsertCommandToPb(inp InsertCommand, tm config.TableMetadata) *pb.InsertCom
 
 func ObjectFromPb(inp *pb.Object, tm config.TableMetadata) (Object, error) {
     obj := make(Object)
-    colList := orderColList(tm)
+    colList := config.OrderColList(tm)
 
     for i, anyField := range inp.GetField() {
         colName := colList[i].Name

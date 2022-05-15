@@ -9,6 +9,7 @@ import (
     "fmt"
 
     "github.com/Dreeseaw/salmon/shared/config"
+    cmds "github.com/Dreeseaw/salmon/shared/commands"
 
 	"github.com/kelindar/column"
 )
@@ -27,19 +28,11 @@ type Table struct {
     Meta config.TableMetadata
 }
 
-func orderColList(tm config.TableMetadata) []config.ColumnMetadata {
-    ret := make([]config.ColumnMetadata, len(tm))
-    for _, colMeta := range tm {
-        ret[colMeta.Order] = colMeta
-    }
-    return ret
-} 
-
 func NewTable(tm config.TableMetadata) *Table {
     coll := column.NewCollection()
 
     // create columns in correct order
-    for _, colMeta := range orderColList(tm) {
+    for _, colMeta := range config.OrderColList(tm) {
         colFunc, _ := CollectionTypeMap[colMeta.Type]
         coll.CreateColumn(colMeta.Name, colFunc())
     }
@@ -55,15 +48,15 @@ func (ta *Table) InsertObject(obj map[string]interface{}) error {
     return nil
 }
 
-func (ta *Table) Select(selectors []string, filters []filter) ([]Object, error) {
+func (ta *Table) Select(selectors []string, filters []cmds.Filter) ([]cmds.Object, error) {
     
-    result_rows := make([]Object, 0)
+    result_rows := make([]cmds.Object, 0)
 
     ta.Coll.Query(func(txn *column.Txn) error {
 
         // filter rows, account for bool
         for _, f := range filters {
-            bf, ok := f.(BoolFilter)
+            bf, ok := f.(cmds.BoolFilter)
             if ok {
                 if bf.Val {
                     txn = txn.With(f.ColName())
@@ -80,7 +73,7 @@ func (ta *Table) Select(selectors []string, filters []filter) ([]Object, error) 
 
         // range and return selected data
         return txn.Range(func (i uint32) {
-            row_obj := make(Object)
+            row_obj := make(cmds.Object)
             for _, sel := range selectors {
                 value, _ := txn.Any(sel).Get()
                 row_obj[sel] = value

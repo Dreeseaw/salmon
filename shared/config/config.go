@@ -57,3 +57,11 @@ func ReadConfig(filePath string) (map[string]TableMetadata, error) {
     }
     return tables, nil
 }
+
+func OrderColList(tm TableMetadata) []ColumnMetadata {
+    ret := make([]ColumnMetadata, len(tm))
+    for _, colMeta := range tm {
+        ret[colMeta.Order] = colMeta
+    }
+    return ret
+}

@@ -12,6 +12,7 @@ require (
 )
 
 require (
+	github.com/Dreeseaw/salmon/shared/commands v0.0.0-00010101000000-000000000000 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/kelindar/bitmap v1.1.5 // indirect
@@ -31,6 +32,7 @@ require (
 )
 
 replace (
+	github.com/Dreeseaw/salmon/shared/commands => ../shared/commands
 	github.com/Dreeseaw/salmon/shared/config => ../shared/config
 	github.com/Dreeseaw/salmon/shared/grpc => ../shared/grpc
 )

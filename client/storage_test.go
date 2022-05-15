@@ -8,6 +8,7 @@ import (
     "testing"
 
     "github.com/Dreeseaw/salmon/shared/config"
+    cmds "github.com/Dreeseaw/salmon/shared/commands"
 
     "github.com/kelindar/column"
     "github.com/stretchr/testify/assert"
@@ -114,23 +115,23 @@ func Test_Filtering(t *testing.T) {
         }
     }
 
-    filters := []filter{
-        IntFilter{
+    filters := []cmds.Filter{
+        cmds.IntFilter{
             Col: "testcolumnint",
             Op: "<=",
             Val: (int32)(6),
         },
-        FloatFilter{
+        cmds.FloatFilter{
             Col: "testcolumnfloat",
             Op: ">",
             Val: (float64)(10.5),
         },
-        StringFilter{
+        cmds.StringFilter{
             Col: "testcolumnstr",
             Op: "=",
             Val: "tester",
         },
-        BoolFilter{
+        cmds.BoolFilter{
             Col: "testcolumnbool",
             Op: "=",
             Val: false,
@@ -184,13 +185,13 @@ func Test_Selecting(t *testing.T) {
         }
     }
     
-    filters := []filter{
-        IntFilter{
+    filters := []cmds.Filter{
+        cmds.IntFilter{
             Col: "testcolumnint",
             Op: "=",
             Val: (int32)(13),
         },
-        StringFilter{
+        cmds.StringFilter{
             Col: "testcolumnstr",
             Op: "=",
             Val: "tester",
