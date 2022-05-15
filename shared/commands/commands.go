@@ -22,7 +22,7 @@ type SelectCommand struct {
     Id         string
     TableName  string
     Selectors  []string
-    Filters    []filter
+    Filters    []Filter
     ResultChan chan CommandResult
 }
 

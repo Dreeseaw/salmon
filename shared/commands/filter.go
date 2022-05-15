@@ -1,6 +1,6 @@
 package commands
 
-type filter interface {
+type Filter interface {
     Process(interface{}) bool
     ColName() string
 }
