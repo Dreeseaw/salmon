@@ -1,10 +1,10 @@
-module gihtub.com/Dreeseaw/salmon/shared/config
+module github.com/Dreeseaw/salmon/shared/config
 
 go 1.17
 
 require (
 	github.com/stretchr/testify v1.7.1
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+	gopkg.in/yaml.v3 v3.0.0-20220512140231-539c8e751b99
 )
 
 require (
