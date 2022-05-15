@@ -1,6 +1,8 @@
 package commands
 
 import (
+    "errors"
+
     "github.com/Dreeseaw/salmon/shared/config"
     pb "github.com/Dreeseaw/salmon/shared/grpc"
 )
@@ -77,7 +79,7 @@ func InsertCommandToPb(inp InsertCommand, tm config.TableMetadata) *pb.InsertCom
 
 func ObjectFromPb(inp *pb.Object, tm config.TableMetadata) (Object, error) {
     obj := make(Object)
-    colList := orderColList(tm)
+    colList := config.OrderColList(tm)
 
     for i, anyField := range inp.GetField() {
         colName := colList[i].Name
