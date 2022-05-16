@@ -1,6 +1,6 @@
 # salmon
 
-An embedded, distrubuted cache built for maximizing data locality. Under the hood, the cache uses 
+An embedded, distrubuted cache built for maximizing data locality. Behind the scenes, a routing process observes the distribution of objects that each client is inserting, and replicates similarly-indexed objects to it.
 
 ### Architecture
 
