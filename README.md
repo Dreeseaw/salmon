@@ -6,7 +6,7 @@ An embedded, distrubuted cache built for maximizing data locality.
 
 Designed to store data on the node that'll need it the most, Salmon clients send objects & queries to a centralized Salmon router process (currently single-node), which in turn replicates inserted objects to other clients & plans distributed queries among partitions. 
 
-![salmon architecture](https://github.com/Dreeseaw/salmon/blob/main/salmonarch.png?raw=true)
+![salmon architecture](./salmonarch.png?raw=true "Salmon's Architecture")
 
 This makes it very similar to Memcached & Olric (in Embedded Member mode), with the twist of being able to support aggregation queries and route replicated objects to nodes that already own similar data. Salmon attempts to maximize data locality while minimizing replication overhead and aggregation performance. 
 
