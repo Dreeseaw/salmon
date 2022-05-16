@@ -1,6 +1,6 @@
 # salmon
 
-An embedded, distrubuted cache built for maximizing data locality.
+An embedded, distrubuted cache built for maximizing data locality. Under the hood, the cache uses 
 
 ### Architecture
 
@@ -8,11 +8,13 @@ Designed to store data on the node that'll need it the most, Salmon clients send
 
 ![salmon architecture](./salmonarch.png?raw=true "Salmon's Architecture")
 
-This makes it very similar to Memcached & Olric (in Embedded Member mode), with the twist of being able to support aggregation queries and route replicated objects to nodes that already own similar data. Salmon attempts to maximize data locality while minimizing replication overhead and aggregation performance. 
+This makes it very similar to Memcached & Olric (in Embedded Member mode), with the twist of being able to support aggregation queries and route replicated objects to nodes that already own similar data. Salmon attempts to maximize data locality while minimizing replication overhead and aggregation performance.
 
-### Usage (heavy development)
+The client-router architecture was chosen over a leader-follower replication scheme, such as using Raft or Bully Election, due to my future goals of exploring complex hashing functions. This complex, custom hashing function may be too much for client applications to performantly process. 
 
-Right now, only three functions are supported for the client - NewSalmon, Insert, & Select. Select only supports simple filtering and column selecting, with no aggregations supported yet. 
+### Usage
+
+Right now, only two functions are supported for the client (other than Init & Start) - Insert and Select. Select only supports simple filtering and column selecting, with no aggregations supported yet. See the example below for usage of these functions.
 
 #### Simple Example
 
