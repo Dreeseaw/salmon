@@ -81,22 +81,9 @@ func main() {
 
 ~~~
 
-### Developing
+### Roadmap
 
-#### Starting Router (gRPC server)
-
-~~~
-cd router/ && go run ./...
-~~~
-
-#### Compiling new gRPC protos
-
-~~~
-export PATH="$PATH:$(go env GOPATH)/bin"
-
-protoc --go_out=. --go_opt=paths=source_relative \
-    --go-grpc_out=. --go-grpc_opt=paths=source_relative \
-    grpc/router_service.proto
-~~~
-
-
+- Finish Distributed Selects
+- Update, Delete, & TTL
+- Aggregations
+- Router Failure-over
