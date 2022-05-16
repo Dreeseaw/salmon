@@ -12,10 +12,72 @@ This makes it very similar to Memcached & Olric (in Embedded Member mode), with 
 
 ### Usage (heavy development)
 
-After cloning the repo, you'll need to define your own tables in a yaml file. Then you can start the routing server.
-
 Right now, only three functions are supported for the client - NewSalmon, Insert, & Select. Select only supports simple filtering and column selecting, with no aggregations supported yet. 
 
+#### Simple Example
+
+Install Client & Run Router
+~~~
+$ go get github.com/Dreeseaw/salmon/client 
+$ go install github.com/Dreeseaw/salmon/router
+$ ./router
+Serving on localhost:27604
+~~~
+
+Creating a Config
+~~~
+$ cat /etc/salmon.yaml
+sensortable:
+  sensorid:
+    type: int
+    name: sensorid
+    order: 0
+    pkey: True
+  sensortype:
+    type: string
+    name: sensortype
+    order: 1
+    pkey: True
+  sensorval:
+    type: float
+    name: sensorval
+    order: 2
+~~~
+
+Client Application Code
+~~~
+import (
+    "fmt"
+
+    salmon "github.com/Dreeseaw/salmon/client"
+)
+
+func main() {
+    sal := salmon.NewSalmon("localhost:27604")
+    sal.Init("/etc/salmon.yaml")
+    sal.Start()
+
+    obj := map[string]interface{
+        "sensorid": 21,
+        "sensortype": "street",
+        "sensorval": 12.345,
+    }
+    sal.Insert("sensortable", obj)
+
+    filters := []Filter{
+        StringFilter{
+            Col: "sensortype",
+            Op: "=",
+            Val: "street",
+        }
+    }
+    selectors := []string{"sensorid", "sensorval"}
+    resultsObjects, err := sal.Select("sensortable", selectors, filters)
+
+    fmt.Println(resultObjects)
+}
+
+~~~
 
 ### Developing
 
