@@ -1,14 +1,14 @@
 # salmon
 
-An embedded, distrubuted cache built for maximizing data locality. Behind the scenes, a routing process observes the distribution of objects that each client is inserting, and replicates similarly-indexed objects to it.
+An embedded, distributed cache built for maximizing data locality. Behind the scenes, a routing process observes the distribution of objects that each client is inserting, and replicates similarly-indexed objects to it.
 
 ### Architecture
 
-Designed to store data on the node that'll need it the most, Salmon clients send objects & queries to a centralized Salmon router process (currently single-node), which in turn replicates inserted objects to other clients & plans distributed queries among partitions. 
+Designed to store data on the node that will need it the most, Salmon clients send objects & queries to a centralized Salmon router process (currently single-node), which in turn replicates inserted objects to other clients & plans distributed queries among partitions. 
 
 ![salmon architecture](./salmonarch.png?raw=true "Salmon's Architecture")
 
-This makes it very similar to Memcached & Olric (in Embedded Member mode), with the twist of being able to support aggregation queries and route replicated objects to nodes that already own similar data. Salmon attempts to maximize data locality while minimizing replication overhead and aggregation performance.
+This makes it very similar to Memcached, Groupcache & Olric (in Embedded Member mode), with the twist of being able to support aggregation queries and route replicated objects to nodes that already own similar data. Salmon attempts to maximize data locality while minimizing replication overhead and aggregation latency.
 
 The client-router architecture was chosen over a leader-follower replication scheme, such as using Raft or Bully Election, due to my future goals of exploring complex hashing functions. This complex, custom hashing function may be too much for client applications to performantly process. 
 
